@@ -1,1497 +1,499 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quill & Leaf</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        :root {
-            --app-height: 100vh; 
-            --bg-color: #FDFBF7;
-            --page-bg: #FFFFFF;
-            --text-color: #4A4A4A;
-            --text-muted: #8A8A8A;
-            --accent-yellow: #F0E6B1;
-            --accent-orange: #D9946B;
-            --accent-hover: #C58456;
-            --panel-bg: #F5F1E8;
-            --border-color: #E2DCCF;
-            --shadow-color: rgba(0, 0, 0, 0.08);
-            --header-height: 60px;
-            --sidebar-width: 260px;
-            --tray-width: 280px;
-            --transition-speed: 0.3s;
-        }
-
-        body.zen-mode {
-            --bg-color: #000000;
-            --page-bg: #111111;
-            --text-color: #C0C0C0;
-            --text-muted: #808080;
-            --accent-yellow: #333333;
-            --accent-orange: #4A4A4A;
-            --accent-hover: #5A5A5A;
-            --panel-bg: #0A0A0A;
-            --border-color: #222222;
-            --shadow-color: rgba(0, 0, 0, 0.5);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Nunito', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            transition: background-color var(--transition-speed), color var(--transition-speed);
-            overflow: hidden;
-            height: 100vh; 
-            height: var(--app-height);
-        }
-
-        /* --- Header --- */
-        .app-header {
-            height: var(--header-height);
-            background-color: var(--panel-bg);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 20px;
-            transition: background-color var(--transition-speed), border-color var(--transition-speed);
-            z-index: 100;
-            position: relative;
-            flex-shrink: 0;
-        }
-        .header-left, .header-right { display: flex; align-items: center; gap: 15px; }
-        .app-title { font-family: 'Merriweather', serif; font-weight: 700; font-size: 1.2rem; color: var(--accent-orange); }
-        .icon-btn {
-            background: none; border: none; color: var(--text-color); cursor: pointer;
-            padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
-            transition: background-color 0.2s, color 0.2s;
-        }
-        .icon-btn:hover { background-color: var(--accent-yellow); }
-        .icon-btn svg { width: 22px; height: 22px; }
-        .icon-btn.active { background-color: var(--accent-orange); color: white; }
-
-        /* --- Layout & Workspace --- */
-        .workspace { display: flex; height: calc(var(--app-height) - var(--header-height)); position: relative; overflow: hidden; }
-        
-        .sidebar, .tray {
-            background-color: var(--panel-bg);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            transition: width var(--transition-speed) ease, padding var(--transition-speed) ease, border-color var(--transition-speed);
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-        .sidebar { width: var(--sidebar-width); border-right: 1px solid var(--border-color); }
-        .tray { width: var(--tray-width); border-left: 1px solid var(--border-color); }
-        .sidebar.collapsed, .tray.collapsed { width: 0 !important; padding: 0; border: none; }
-
-        /* --- Canvas & Pages --- */
-        .canvas-container { flex-grow: 1; overflow-y: auto; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; scroll-behavior: smooth; position: relative; }
-        .pages-wrapper { width: 100%; max-width: 700px; display: flex; flex-direction: column; gap: 40px; }
-        
-        .page {
-            background-color: var(--page-bg);
-            width: 100%;
-            height: 800px;
-            max-height: 800px;
-            padding: 60px 70px;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            border-radius: 4px;
-            font-family: 'Merriweather', serif;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: var(--text-color);
-            transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
-            outline: none;
-            position: relative; /* Required for absolute post-it flags */
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-        .page-title { font-size: 1.8rem; margin-bottom: 30px; color: var(--accent-orange); font-weight: 700; }
-        .page.readonly { background-color: var(--bg-color); box-shadow: none; border: 1px dashed var(--border-color); cursor: not-allowed; }
-        .page.readonly::after { content: "Read-Only"; position: absolute; top: 20px; right: 20px; background-color: var(--accent-orange); color: white; padding: 5px 10px; font-family: 'Nunito', sans-serif; font-size: 0.8rem; border-radius: 4px; font-weight: 600; }
-
-        /* --- Editor Toolbar --- */
-        .editor-toolbar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background-color: var(--panel-bg); border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 8px var(--shadow-color); max-width: 700px; width: 100%; z-index: 10; border: 1px solid var(--border-color); flex-shrink: 0; }
-        .tool-btn { background: none; border: 1px solid transparent; color: var(--text-color); cursor: pointer; padding: 6px; border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-        .tool-btn:hover { background-color: var(--accent-yellow); border-color: var(--border-color); }
-        .tool-btn.active { background-color: var(--accent-yellow); color: var(--accent-orange); border-color: var(--border-color); box-shadow: inset 1px 1px 3px rgba(0,0,0,0.05); }
-        .tool-btn svg { width: 20px; height: 20px; }
-        .tool-divider { width: 1px; height: 24px; background-color: var(--border-color); margin: 0 4px; }
-        .tool-select { padding: 6px 8px; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); font-family: 'Nunito', sans-serif; cursor: pointer; transition: border-color 0.2s; font-size: 0.9rem; }
-        .tool-select:hover, .tool-select:focus { border-color: var(--accent-orange); outline: none; }
-        .tool-color-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); transition: border-color 0.2s; }
-        .tool-color-wrapper:hover { border-color: var(--accent-orange); }
-        .tool-color-wrapper svg { width: 20px; height: 20px; color: var(--text-color); }
-        .tool-color-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; background: none; }
-
-        /* --- Sidebar & Components --- */
-        .sidebar-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-        .tab-btn { flex: 1; padding: 10px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 700; border-bottom: 2px solid transparent; transition: all 0.2s; }
-        .tab-btn.active { color: var(--accent-orange); border-bottom-color: var(--accent-orange); }
-        .tab-content { display: none; flex-direction: column; flex-grow: 1; min-height: 0; }
-        .tab-content.active { display: flex; }
-
-        .chapter-list, .keyword-list { list-style: none; overflow-y: auto; flex-grow: 1; padding-right: 5px; }
-        .chapter-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-radius: 6px; margin-bottom: 8px; cursor: pointer; font-size: 0.95rem; transition: background-color 0.2s; }
-        .chapter-item:hover { background-color: var(--accent-yellow); }
-        .chapter-item.active { background-color: var(--accent-orange); color: white; font-weight: 600; }
-        .chapter-title-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; margin-right: 8px; }
-        .chapter-actions { display: flex; gap: 8px; opacity: 0; transition: opacity 0.2s; flex-shrink: 0; }
-        .chapter-item:hover .chapter-actions { opacity: 1; }
-        .chapter-icon-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; display: flex; align-items: center; border-radius: 4px; }
-        .chapter-item.active .chapter-icon-btn { color: white; }
-        .chapter-icon-btn:hover { color: var(--accent-hover); }
-        .chapter-item.active .chapter-icon-btn:hover { color: #fff; filter: brightness(1.2); }
-        .chapter-icon-btn svg { width: 14px; height: 14px; }
-
-        .add-btn { margin-top: 15px; padding: 10px; background: none; border: 2px dashed var(--border-color); color: var(--text-muted); border-radius: 6px; cursor: pointer; font-family: 'Nunito', sans-serif; font-weight: 600; transition: all 0.2s; flex-shrink: 0; width: 100%; }
-        .add-btn:hover { border-color: var(--accent-orange); color: var(--accent-orange); }
-
-        /* --- Keyword UI --- */
-        .keyword-input-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; flex-shrink: 0; background: var(--bg-color); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
-        .keyword-input-group input { padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--bg-color); color: var(--text-color); font-family: 'Nunito', sans-serif; }
-        .keyword-stats-title { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 10px; padding-left: 5px; }
-        .keyword-item { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 10px; transition: border-color 0.2s; }
-        .keyword-item:hover { border-color: var(--accent-orange); }
-        .keyword-main { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .keyword-name { font-weight: 700; color: var(--accent-orange); font-size: 1rem; }
-        .keyword-notes { font-size: 0.85rem; color: var(--text-muted); font-style: italic; background: var(--panel-bg); padding: 8px; border-radius: 4px; margin-bottom: 8px; border-left: 3px solid var(--accent-yellow); }
-        .keyword-actions-bar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
-        .keyword-action-btn { background: none; border: 1px solid var(--border-color); color: var(--text-color); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-family: 'Nunito', sans-serif; transition: all 0.2s; }
-        .keyword-action-btn:hover { background: var(--accent-yellow); border-color: var(--accent-orange); }
-        .keyword-action-btn.active { background: var(--accent-orange); color: white; border-color: var(--accent-orange); }
-        .keyword-stat { margin-left: auto; font-size: 0.75rem; background-color: var(--accent-yellow); padding: 2px 8px; border-radius: 10px; color: #5A5A5A; font-weight: 700; }
-        .keyword-icon-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; display: flex; align-items: center; border-radius: 4px; }
-        .keyword-icon-btn:hover { color: var(--accent-orange); background: var(--accent-yellow); }
-        .keyword-icon-btn svg { width: 16px; height: 16px; }
-
-        /* --- Post-it Arrow Flags --- */
-        .tray-flag-label { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 15px; text-align: center; }
-        .post-it-template {
-            width: 40px; height: 30px; margin: 0 auto 30px;
-            background-color: var(--accent-yellow);
-            clip-path: polygon(0% 0%, 75% 0%, 100% 50%, 75% 100%, 0% 100%);
-            cursor: grab; opacity: 0.7; transition: opacity 0.2s, transform 0.2s; touch-action: none;
-        }
-        .post-it-template:hover { opacity: 1; transform: scale(1.1); }
-        .post-it-template:active { cursor: grabbing; }
-
-        .canvas-flag { position: absolute; width: 30px; height: 40px; z-index: 10; cursor: grab; touch-action: none; display: flex; align-items: center; justify-content: center; }
-        .canvas-flag:active { cursor: grabbing; z-index: 100; }
-        .flag-body { width: 100%; height: 100%; background-color: var(--accent-yellow); clip-path: polygon(0% 0%, 75% 0%, 100% 50%, 75% 100%, 0% 100%); box-shadow: 2px 2px 5px var(--shadow-color); transition: transform 0.2s; }
-        .canvas-flag.right .flag-body { clip-path: polygon(25% 0%, 100% 0%, 100% 100%, 25% 100%, 0% 50%); }
-        .canvas-flag:hover .flag-body, .canvas-flag.expanded .flag-body { transform: scale(1.15); }
-        .flag-popover { display: none; position: absolute; top: 45px; left: 5px; width: 220px; background: var(--page-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; box-shadow: 0 4px 12px var(--shadow-color); z-index: 200; }
-        .canvas-flag.right .flag-popover { left: auto; right: 5px; }
-        .canvas-flag:hover .flag-popover, .canvas-flag.expanded .flag-popover { display: block; }
-        .flag-text { width: 100%; height: 80px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-color); font-family: 'Nunito', sans-serif; font-size: 0.9rem; padding: 5px; resize: none; outline: none; }
-        .flag-colors { display: flex; gap: 5px; margin-top: 8px; justify-content: center; }
-        .flag-dot { width: 15px; height: 15px; border-radius: 50%; cursor: pointer; border: 1px solid rgba(0,0,0,0.1); }
-        .flag-delete-btn { display: block; margin: 8px auto 0; background: none; border: 1px solid var(--border-color); color: var(--text-muted); padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-family: 'Nunito', sans-serif; transition: all 0.2s; }
-        .flag-delete-btn:hover { color: #fff; background: #e57373; border-color: #e57373; }
-
-        /* --- Fuzzy Search --- */
-        .fuzzy-search-container { position: fixed; top: 75px; right: 25px; z-index: 200; display: flex; background: var(--panel-bg); padding: 8px; border-radius: 8px; box-shadow: 0 4px 12px var(--shadow-color); gap: 8px; align-items: center; border: 1px solid var(--border-color); }
-        .fuzzy-search-container.hidden { display: none; }
-        .fuzzy-search-input { border: 1px solid var(--border-color); border-radius: 4px; padding: 6px 10px; background: var(--bg-color); color: var(--text-color); font-family: 'Nunito', sans-serif; font-size: 0.9rem; width: 200px; }
-        .fuzzy-nav-btn { background: none; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; color: var(--text-color); padding: 4px; display: flex; align-items: center; }
-        .fuzzy-nav-btn svg { width: 14px; height: 14px; }
-        .fuzzy-nav-btn:hover { background: var(--accent-yellow); }
-        .fuzzy-highlight { background-color: var(--accent-yellow); color: var(--text-color); border-radius: 2px; padding: 0 2px; }
-        .fuzzy-highlight.active { background-color: var(--accent-orange); color: white; }
-
-        /* --- Modals --- */
-        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; transition: opacity 0.3s; }
-        .modal.hidden { opacity: 0; pointer-events: none; }
-        .modal-content { background-color: var(--page-bg); padding: 30px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 90%; max-width: 500px; display: flex; flex-direction: column; max-height: 80vh; }
-        .modal-content h2 { font-family: 'Merriweather', serif; color: var(--accent-orange); margin-bottom: 10px; }
-        .modal-content p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; }
-        .history-list { list-style: none; overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--border-color); border-radius: 6px; flex-grow: 1; }
-        .history-item { padding: 12px 15px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-        .history-item:last-child { border-bottom: none; }
-        .history-item button { background-color: var(--accent-orange); color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-family: 'Nunito', sans-serif; }
-        .history-item button:hover { background-color: var(--accent-hover); }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
-        .modal-actions .add-btn { width: auto; margin-top: 0; padding: 8px 16px; }
-        .primary-btn { background: var(--accent-orange); color: white; border-color: var(--accent-orange); }
-        .primary-btn:hover { background: var(--accent-hover); color: white; }
-        .review-item { flex-direction: column; align-items: flex-start; }
-        .review-label { display: flex; gap: 10px; cursor: pointer; width: 100%; }
-        .review-checkbox { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--accent-orange); flex-shrink: 0; }
-        .review-text { font-size: 0.95rem; line-height: 1.5; color: var(--text-color); }
-        .review-text strong { color: var(--accent-orange); }
-        .custom-input { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-color); color: var(--text-color); font-family: 'Nunito', sans-serif; font-size: 1rem; margin-bottom: 20px; box-sizing: border-box; }
-
-        /* --- Lore Hover Cards --- */
-        mark.keyword-highlight { background-color: #E8D4C8; color: var(--text-color); border-radius: 3px; padding: 0 2px; cursor: help; position: relative; }
-        mark.keyword-highlight.inactive { background-color: transparent; text-decoration: underline dotted #ccc; }
-        mark.keyword-highlight:hover::after { content: attr(data-notes); position: absolute; top: 100%; left: 50%; transform: translateX(-50%); background-color: #333; color: #fff; padding: 8px 12px; border-radius: 6px; white-space: pre-wrap; width: 200px; z-index: 1000; margin-top: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-family: 'Nunito', sans-serif; font-size: 0.85rem; font-style: normal; text-align: center; }
-        mark.keyword-highlight:hover::before { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-bottom-color: #333; margin-top: -5px; z-index: 1000; }
-
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-        /* --- Mobile Adjustments --- */
-        @media (max-width: 768px) {
-            .sidebar, .tray { position: absolute; top: 0; bottom: 0; z-index: 50; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
-            .sidebar { left: 0; }
-            .tray { right: 0; }
-            .sidebar.collapsed, .tray.collapsed { width: var(--sidebar-width) !important; padding: 20px; transform: translateX(-100%); border: none; }
-            .tray.collapsed { transform: translateX(100%); }
-            .page { padding: 30px 25px; font-size: 1rem; }
-            .fuzzy-search-container { top: 70px; right: 10px; width: calc(100% - 20px); }
-            .fuzzy-search-input { width: 100%; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BookSpritz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--app-height:100vh;--bg-color:#FDFBF7;--page-bg:#FFF;--text-color:#4A4A4A;--text-muted:#8A8A8A;--accent-yellow:#F0E6B1;--accent-orange:#D9946B;--accent-hover:#C58456;--panel-bg:#F5F1E8;--border-color:#E2DCCF;--shadow-color:rgba(0,0,0,0.08);--header-height:60px;--sidebar-width:280px;--transition-speed:0.3s}
+body.zen-mode{--bg-color:#000;--page-bg:#111;--text-color:#C0C0C0;--text-muted:#808080;--accent-yellow:#333;--accent-orange:#4A4A4A;--accent-hover:#5A5A5A;--panel-bg:#0A0A0A;--border-color:#222;--shadow-color:rgba(0,0,0,0.5)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background-color:var(--bg-color);color:var(--text-color);transition:background-color var(--transition-speed),color var(--transition-speed);overflow:hidden;height:100vh;height:var(--app-height)}
+.app-header{height:var(--header-height);background-color:var(--panel-bg);border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;padding:0 20px;z-index:100;position:relative;flex-shrink:0}
+.header-left,.header-right{display:flex;align-items:center;gap:15px}
+.app-title{font-family:'Merriweather',serif;font-weight:700;font-size:1.2rem;color:var(--accent-orange)}
+.icon-btn{background:none;border:none;color:var(--text-color);cursor:pointer;padding:8px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:background-color 0.2s,color 0.2s}
+.icon-btn:hover{background-color:var(--accent-yellow)}
+.icon-btn svg{width:22px;height:22px}
+.icon-btn.active{background-color:var(--accent-orange);color:#fff}
+.workspace{display:flex;height:calc(var(--app-height) - var(--header-height));position:relative;overflow:hidden}
+.sidebar{background-color:var(--panel-bg);padding:20px;display:flex;flex-direction:column;transition:width var(--transition-speed) ease,padding var(--transition-speed) ease,border-color var(--transition-speed);overflow:hidden;flex-shrink:0;width:var(--sidebar-width);border-right:1px solid var(--border-color)}
+.sidebar.collapsed{width:0!important;padding:0;border:none}
+.canvas-container{flex-grow:1;overflow-y:auto;padding:40px 20px;display:flex;flex-direction:column;align-items:center;scroll-behavior:smooth;position:relative}
+.pages-wrapper{width:100%;max-width:700px;display:flex;flex-direction:column;gap:40px}
+.page{background-color:var(--page-bg);width:100%;height:800px;max-height:800px;padding:60px 70px;box-shadow:0 5px 15px var(--shadow-color);border-radius:4px;font-family:'Merriweather',serif;font-size:1.1rem;line-height:1.8;color:var(--text-color);outline:none;position:relative;overflow:hidden;box-sizing:border-box}
+.page-title{font-size:1.8rem;margin-bottom:30px;color:var(--accent-orange);font-weight:700}
+.compiled-view{width:100%;max-width:800px;background:var(--page-bg);padding:60px;box-shadow:0 5px 15px var(--shadow-color);border-radius:4px;box-sizing:border-box}
+.compiled-view h2{font-family:'Merriweather',serif;color:var(--accent-orange);margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid var(--border-color)}
+.compiled-view .compiled-content{margin-bottom:60px;line-height:1.8;font-family:'Merriweather',serif;font-size:1.1rem}
+.find-panel{position:sticky;top:0;left:0;right:0;background:var(--panel-bg);padding:10px 20px;border-bottom:1px solid var(--border-color);display:flex;gap:10px;align-items:center;z-index:15;box-shadow:0 2px 8px var(--shadow-color);transform:translateY(-150%);transition:transform 0.3s ease}
+.find-panel.active{transform:translateY(0)}
+.find-panel input{flex-grow:1;padding:8px;border:1px solid var(--border-color);border-radius:4px;background:var(--bg-color);color:var(--text-color)}
+.find-counter{font-size:0.85rem;color:var(--text-muted);font-weight:600;white-space:nowrap}
+.editor-toolbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background-color:var(--panel-bg);border-radius:8px;margin-bottom:20px;box-shadow:0 2px 8px var(--shadow-color);max-width:700px;width:100%;z-index:10;border:1px solid var(--border-color);flex-shrink:0;flex-wrap:wrap}
+.tool-btn{background:none;border:1px solid transparent;color:var(--text-color);cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.tool-btn:hover{background-color:var(--accent-yellow);border-color:var(--border-color)}
+.tool-btn.active{background-color:var(--accent-yellow);color:var(--accent-orange);border-color:var(--border-color)}
+.tool-btn svg{width:20px;height:20px}
+.tool-divider{width:1px;height:24px;background-color:var(--border-color);margin:0 4px}
+.tool-select{padding:6px 8px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:4px;color:var(--text-color);cursor:pointer;font-size:0.9rem}
+.color-popover-wrap{position:relative}
+.color-palette{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px;background:var(--page-bg);border:1px solid var(--border-color);border-radius:8px;box-shadow:0 4px 12px var(--shadow-color);position:absolute;top:45px;left:0;z-index:200;width:180px}
+.color-palette.hidden{display:none}
+.preset-color{width:24px;height:24px;border-radius:4px;border:1px solid rgba(0,0,0,0.1);cursor:pointer;padding:0}
+.preset-color:hover{transform:scale(1.1)}
+.popover-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px;grid-column:1/-1}
+.popover-actions select{font-size:0.8rem;padding:2px}
+.confirm-color-btn{background:var(--accent-orange);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:0.8rem;font-weight:600}
+.fab{position:fixed;bottom:25px;right:25px;width:50px;height:50px;background-color:var(--accent-orange);color:#fff;border-radius:50%;box-shadow:0 4px 12px var(--shadow-color);display:flex;align-items:center;justify-content:center;cursor:grab;z-index:90;transition:transform 0.2s;user-select:none;touch-action:none}
+.fab:hover{background-color:var(--accent-hover);transform:scale(1.05)}
+.fab svg{width:24px;height:24px;pointer-events:none}
+.sidebar-tabs{display:flex;margin-bottom:25px;background:var(--bg-color);border-radius:10px;padding:5px;gap:5px;flex-shrink:0;border:1px solid var(--border-color)}
+.tab-btn{flex:1;padding:10px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-weight:700;border-radius:8px;transition:all 0.2s;font-size:0.85rem}
+.tab-btn:hover{color:var(--accent-orange)}
+.tab-btn.active{color:var(--accent-orange);background:var(--panel-bg);box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.tab-content{display:none;flex-direction:column;flex-grow:1;min-height:0}
+.tab-content.active{display:flex}
+.chapter-list,.keyword-list{list-style:none;overflow-y:auto;flex-grow:1;padding-right:5px;margin-top:5px}
+.chapter-item,.keyword-item{display:flex;flex-direction:column;gap:10px;background:var(--bg-color);border:1px solid var(--border-color);padding:15px;border-radius:10px;margin-bottom:12px;transition:border-color 0.2s;box-sizing:border-box;width:100%}
+.chapter-item{flex-direction:row;align-items:center;justify-content:space-between}
+.chapter-item:hover,.keyword-item:hover{border-color:var(--accent-orange)}
+.chapter-title-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-grow:1;margin-right:8px;font-weight:600}
+.chapter-item.active{background-color:var(--accent-orange);color:#fff}
+.chapter-actions,.keyword-actions-bar{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.chapter-icon-btn,.keyword-icon-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;display:flex;align-items:center;border-radius:4px;transition:all 0.2s}
+.chapter-icon-btn:hover,.keyword-icon-btn:hover{color:var(--accent-orange);background:var(--accent-yellow)}
+.chapter-item.active .chapter-icon-btn{color:#fff}
+.chapter-icon-btn svg,.keyword-icon-btn svg{width:16px;height:16px}
+.add-btn{margin-top:15px;padding:12px;background:none;border:2px dashed var(--border-color);color:var(--text-muted);border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.2s;flex-shrink:0;width:100%}
+.add-btn:hover{border-color:var(--accent-orange);color:var(--accent-orange)}
+.add-btn.primary-btn{background:var(--accent-orange);color:#fff;border-color:var(--accent-orange)}
+.add-btn.primary-btn:hover{background:var(--accent-hover)}
+.keyword-input-group{display:flex;flex-direction:column;gap:12px;margin-bottom:25px;flex-shrink:0;background:var(--bg-color);padding:18px;border-radius:10px;border:1px solid var(--border-color)}
+.keyword-input-group input{padding:12px;border:1px solid var(--border-color);border-radius:6px;background-color:var(--bg-color);color:var(--text-color);font-size:0.95rem;width:100%;box-sizing:border-box}
+.keyword-stats-title{font-size:0.85rem;text-transform:uppercase;color:var(--text-muted);letter-spacing:1px;margin-bottom:12px;padding-left:5px;font-weight:700}
+.keyword-main{display:flex;justify-content:space-between;align-items:center;width:100%}
+.keyword-name{font-weight:700;color:var(--accent-orange);font-size:1rem}
+.keyword-notes{font-size:0.85rem;color:var(--text-muted);font-style:italic;background:var(--panel-bg);padding:10px;border-radius:6px;border-left:3px solid var(--accent-yellow);width:100%;box-sizing:border-box}
+.keyword-actions-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%;box-sizing:border-box}
+.keyword-action-btn{background:var(--bg-color);border:1px solid var(--border-color);color:var(--text-color);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600;flex-shrink:1}
+.keyword-action-btn:hover{background:var(--accent-yellow);border-color:var(--accent-orange);color:var(--accent-orange)}
+.keyword-action-btn.active{background:var(--accent-orange);color:#fff;border-color:var(--accent-orange)}
+.keyword-stat{font-size:0.75rem;background-color:var(--accent-yellow);padding:4px 10px;border-radius:12px;color:#5A5A5A;font-weight:700;margin-left:auto;flex-shrink:0}
+.keyword-format-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-top:10px;border-top:1px solid var(--border-color);margin-top:4px;width:100%;box-sizing:border-box}
+.fmt-btn{width:32px;height:32px;border:1px solid var(--border-color);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem;font-weight:700;background:var(--bg-color);color:var(--text-muted);flex-shrink:0}
+.fmt-btn:hover{border-color:var(--accent-orange);color:var(--accent-orange)}
+.fmt-btn.active{background:var(--accent-yellow);color:var(--accent-orange);border-color:var(--accent-orange)}
+.fmt-color{width:32px;height:32px;border:1px solid var(--border-color);border-radius:6px;background:none;cursor:pointer;padding:0;flex-shrink:0}
+.canvas-flag{position:absolute;width:30px;height:40px;z-index:10;cursor:grab;touch-action:none;display:flex;align-items:center;justify-content:center;user-select:none}
+.canvas-flag:active{cursor:grabbing;z-index:100}
+.flag-body{width:100%;height:100%;background-color:var(--accent-yellow);clip-path:polygon(0% 0%,75% 0%,100% 50%,75% 100%,0% 100%);box-shadow:2px 2px 5px var(--shadow-color);transition:transform 0.2s;pointer-events:none}
+.canvas-flag.right .flag-body{clip-path:polygon(25% 0%,100% 0%,100% 100%,25% 100%,0% 50%)}
+.canvas-flag:hover .flag-body,.canvas-flag.expanded .flag-body{transform:scale(1.15)}
+.flag-popover{display:none;position:absolute;top:45px;left:5px;width:220px;background:var(--page-bg);border:1px solid var(--border-color);border-radius:6px;padding:10px;box-shadow:0 4px 12px var(--shadow-color);z-index:200}
+.canvas-flag.right .flag-popover{left:auto;right:5px}
+.canvas-flag:hover .flag-popover,.canvas-flag.expanded .flag-popover{display:block}
+.flag-text{width:100%;height:80px;border:1px solid var(--border-color);border-radius:4px;background:var(--bg-color);color:var(--text-color);font-size:0.9rem;padding:5px;resize:none;outline:none}
+.flag-colors{display:flex;gap:5px;margin-top:8px;justify-content:center}
+.flag-dot{width:15px;height:15px;border-radius:50%;cursor:pointer;border:1px solid rgba(0,0,0,0.1)}
+.flag-delete-btn{display:block;margin:8px auto 0;background:none;border:1px solid var(--border-color);color:var(--text-muted);padding:6px 8px;border-radius:4px;cursor:pointer;font-size:0.8rem;width:100%}
+.flag-delete-btn:hover{color:#fff;background:#e57373;border-color:#e57373}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000}
+.modal.hidden{opacity:0;pointer-events:none}
+.modal-content{background-color:var(--page-bg);padding:30px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.2);width:90%;max-width:500px;display:flex;flex-direction:column;max-height:80vh}
+.modal-content h2{font-family:'Merriweather',serif;color:var(--accent-orange);margin-bottom:10px}
+.modal-content p{font-size:0.9rem;color:var(--text-muted);margin-bottom:20px}
+.history-list{list-style:none;overflow-y:auto;margin-bottom:20px;border:1px solid var(--border-color);border-radius:6px;flex-grow:1;background:var(--bg-color)}
+.history-item{padding:12px 15px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center}
+.history-item:last-child{border-bottom:none}
+.history-item button{background-color:var(--accent-orange);color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:0.85rem}
+.history-item button:hover{background-color:var(--accent-hover)}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px}
+.modal-actions .add-btn{width:auto;margin-top:0;padding:8px 16px}
+.review-item{flex-direction:column;align-items:flex-start}
+.review-label{display:flex;gap:10px;cursor:pointer;width:100%}
+.review-checkbox{margin-top:4px;width:16px;height:16px;accent-color:var(--accent-orange);flex-shrink:0}
+.review-text{font-size:0.95rem;line-height:1.5;color:var(--text-color)}
+.review-text strong{color:var(--accent-orange)}
+.custom-input{width:100%;padding:10px;border:1px solid var(--border-color);border-radius:4px;background:var(--bg-color);color:var(--text-color);font-size:1rem;margin-bottom:20px;box-sizing:border-box}
+#authForm{display:flex;flex-direction:column;gap:12px;margin-top:20px}
+#authForm .custom-input{margin-bottom:0}
+.auth-info-box{background:var(--bg-color);border:1px solid var(--border-color);padding:15px;border-radius:8px;margin-bottom:20px}
+.auth-info-label{font-size:0.85rem;text-transform:uppercase;color:var(--text-muted);letter-spacing:1px;margin-bottom:5px}
+.auth-info-email{font-weight:700;color:var(--accent-orange);word-break:break-all;font-size:1rem}
+span.keyword-span{background-color:#E8D4C8;color:var(--text-color);border-radius:3px;padding:0 2px;cursor:help;position:relative;border:1px solid transparent}
+span.keyword-span:hover{border:1px solid var(--accent-orange)}
+span.keyword-span:hover::after{content:attr(data-notes);position:absolute;top:100%;left:50%;transform:translateX(-50%);background-color:#333;color:#fff;padding:8px 12px;border-radius:6px;white-space:pre-wrap;width:200px;z-index:1000;margin-top:5px;box-shadow:0 4px 12px rgba(0,0,0,0.2);font-family:'Nunito',sans-serif;font-size:0.85rem;font-style:normal;text-align:center}
+mark.find-match{background-color:var(--accent-yellow);color:var(--text-color);border-radius:2px;padding:0 2px}
+mark.find-active{background-color:var(--accent-orange);color:#fff}
+.baked-keyword{border-bottom:2px dotted var(--accent-orange)}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px}
+@media (max-width:768px){.sidebar{position:absolute;top:0;bottom:0;z-index:50;box-shadow:5px 0 15px rgba(0,0,0,0.1);left:0}.sidebar.collapsed{width:var(--sidebar-width)!important;padding:20px;transform:translateX(-100%);border:none}.page{padding:30px 25px;font-size:1rem}.fab{bottom:20px;right:20px}.color-palette{width:160px}.find-panel{flex-wrap:wrap}}
+</style>
 </head>
 <body>
+<header class="app-header">
+<div class="header-left">
+<button id="sidebarToggle" class="icon-btn" title="Toggle Chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+<h1 class="app-title">BookSpritz</h1>
+</div>
+<div class="header-right">
+<button id="findToggle" class="icon-btn" title="Find (Ctrl+F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+<button id="historyToggle" class="icon-btn" title="Time Machine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
+<button id="fullscreenToggle" class="icon-btn" title="Full Screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+<button id="readonlyToggle" class="icon-btn" title="Read-Only Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+<button id="zenToggle" class="icon-btn" title="Zen Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+</div>
+</header>
+<div class="workspace">
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-tabs">
+<button class="tab-btn active" data-tab="chapters">Chapters</button>
+<button class="tab-btn" data-tab="keywords">Keywords</button>
+<button class="tab-btn" data-tab="account">Account</button>
+</div>
+<div class="tab-content active" id="chaptersTab">
+<ul class="chapter-list" id="chapterList"></ul>
+<button class="add-btn" id="addChapterBtn">+ New Chapter</button>
+</div>
+<div class="tab-content" id="keywordsTab">
+<div class="keyword-input-group">
+<input type="text" id="newKeywordInput" placeholder="Add character/item...">
+<input type="text" id="newKeywordNotes" placeholder="Lore notes...">
+<button id="addKeywordBtn" class="add-btn primary-btn">+ Add Keyword</button>
+</div>
+<div class="keyword-stats-title">Active Keywords</div>
+<ul class="keyword-list" id="keywordList"></ul>
+</div>
+<div class="tab-content" id="accountTab">
+<div id="authForm">
+<h3 style="font-family:'Merriweather',serif;color:var(--accent-orange);margin-bottom:10px;">Login / Sign Up</h3>
+<input type="email" id="authEmail" class="custom-input" placeholder="Email" style="margin-bottom:0;">
+<input type="password" id="authPass" class="custom-input" placeholder="Password" style="margin-bottom:0;">
+<button id="signupBtn" class="add-btn primary-btn">Sign Up</button>
+<button id="loginBtn" class="add-btn">Log In</button>
+</div>
+<div id="authDetails" style="display:none;flex-direction:column;flex-grow:1;">
+<div class="auth-info-box"><div class="auth-info-label">Signed in as</div><div id="userEmail" class="auth-info-email"></div></div>
+<p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:20px;">Your work is automatically synced to the cloud while logged in.</p>
+<button id="logoutBtn" class="add-btn">Log Out</button>
+</div>
+</div>
+</aside>
+<main class="canvas-container" id="canvasContainer">
+<div id="findPanel" class="find-panel">
+<input type="text" id="findInput" placeholder="Find in page...">
+<span id="findCounter" class="find-counter">0 of 0</span>
+<button class="icon-btn" id="findPrevBtn" title="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg></button>
+<button class="icon-btn" id="findNextBtn" title="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+<button class="icon-btn" id="findCloseBtn" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+</div>
+<div class="editor-toolbar" id="editorToolbar">
+<button class="tool-btn" id="boldBtn" title="Bold" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg></button>
+<button class="tool-btn" id="italicBtn" title="Italic" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg></button>
+<div class="tool-divider"></div>
+<select id="fontSizeSelect" class="tool-select" title="Text Size"><option value="3">Normal</option><option value="1">Small</option><option value="5">Large</option><option value="6">Huge</option></select>
+<div class="color-popover-wrap">
+<button class="tool-btn" id="colorToggleBtn" title="Text Color" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></button>
+<div id="colorPalette" class="color-palette hidden"></div>
+</div>
+</div>
+<div class="pages-wrapper" id="pagesWrapper"></div>
+</main>
+</div>
+<div id="postItFab" class="fab" title="Add Margin Note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3v5h5"/><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11z"/></svg></div>
+<div id="historyModal" class="modal hidden"><div class="modal-content"><h2>Time Machine</h2><p>Revert to a previous auto-save (Captured every 10 mins).</p><ul id="historyList" class="history-list"></ul><div class="modal-actions"><button id="closeHistoryBtn" class="add-btn">Close</button></div></div></div>
+<div id="reviewModal" class="modal hidden"><div class="modal-content"><h2 id="reviewModalTitle">Review Action</h2><p>Select the instances where you want to apply the action. Uncheck any you wish to keep as-is.</p><ul id="reviewList" class="history-list"></ul><div class="modal-actions"><button id="closeReviewBtn" class="add-btn">Cancel</button><button id="applyReviewBtn" class="add-btn primary-btn">Apply Selected</button></div></div></div>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+const $ = id => document.getElementById(id);
+const firebaseConfig={apiKey:"AIzaSyBt3A8YQaYE1fMdXwlh7AvPu0w_7F8f-e4",authDomain:"spreadapoteck.firebaseapp.com",databaseURL:"https://spreadapoteck-default-rtdb.europe-west1.firebasedatabase.app",projectId:"spreadapoteck",storageBucket:"spreadapoteck.firebasestorage.app",messagingSenderId:"1060961337221",appId:"1:1060961337221:web:78c2a19fe6197a29e8ceec",measurementId:"G-39VC7GKE4N"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(), db=firebase.database();
+const DB_KEY='bookSpritzData', HISTORY_KEY='bookSpritzHistory';
+let appData={chapters:[],keywords:{},colorPresets:['#000000','#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#FFA500','#800080','#FFC0CB','#008080']};
+let activeChapterId=null, saveTimeout=null, savedToolbarRange=null, currentUser=null, findMatches=[], findIndex=-1, reviewCallback=null, highlightTimeout=null;
+const POST_IT_COLORS=['#F0E6B1','#D9946B','#C9D6D3','#E8D4C8','#D4C5E2'];
+const chapterList=$('chapterList'), canvasContainer=$('canvasContainer'), pagesWrapper=$('pagesWrapper'), findPanel=$('findPanel'), findInput=$('findInput'), findCounter=$('findCounter');
+document.execCommand("defaultParagraphSeparator", false, "p");
+
+const CustomUI = {
+    modalContainer: null, init() { this.modalContainer = document.createElement('div'); this.modalContainer.className = 'modal hidden'; this.modalContainer.id = 'customModal'; this.modalContainer.innerHTML = `<div class="modal-content"><h2 id="customModalTitle"></h2><p id="customModalMsg" style="margin-bottom:15px;"></p><input type="text" id="customModalInput" class="custom-input" style="display:none;"><div class="modal-actions"><button id="customModalCancel" class="add-btn">Cancel</button><button id="customModalOk" class="add-btn primary-btn">OK</button></div></div>`; document.body.appendChild(this.modalContainer); },
+    show(title, msg, inputVal, hasCancel, callback) { $('customModalTitle').innerText = title; $('customModalMsg').innerText = msg; const input = $('customModalInput'), cancelBtn = $('customModalCancel'); if (inputVal !== undefined) { input.style.display = 'block'; input.value = inputVal; } else { input.style.display = 'none'; } cancelBtn.style.display = hasCancel ? 'block' : 'none'; this.modalContainer.classList.remove('hidden'); const okBtn = $('customModalOk'); const newOk = okBtn.cloneNode(true); okBtn.parentNode.replaceChild(newOk, okBtn); const newCancel = cancelBtn.cloneNode(true); cancelBtn.parentNode.replaceChild(newCancel, cancelBtn); newOk.onclick = () => { this.modalContainer.classList.add('hidden'); if (callback) callback(input.style.display === 'none' ? true : input.value); }; newCancel.onclick = () => { this.modalContainer.classList.add('hidden'); if (callback) callback(null); }; },
+    alert(msg, title="Alert") { this.show(title, msg, undefined, false, null); }, confirm(msg, callback, title="Confirm") { this.show(title, msg, undefined, true, res => callback(res)); }, prompt(msg, defaultText, callback, title="Input") { this.show(title, msg, defaultText, true, res => callback(res)); }
+}; CustomUI.init();
+
+function getCleanHTML(el) { const cl = el.cloneNode(true); cl.querySelectorAll('span.keyword-span,mark.find-match,mark.find-active').forEach(m => m.replaceWith(document.createTextNode(m.textContent))); cl.querySelectorAll('.canvas-flag').forEach(f => f.remove()); return cl.innerHTML; }
+
+function loadData() {
+    const sd = localStorage.getItem(DB_KEY);
+    if (sd) {
+        appData = JSON.parse(sd); if (!appData.colorPresets) appData.colorPresets = ['#000000','#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#FFA500','#800080','#FFC0CB','#008080'];
+        // Migration: Move global postIts to chapter scopes
+        if (appData.postIts && appData.postIts.length) {
+            appData.chapters.forEach(ch => {
+                ch.flags = appData.postIts.filter(f => f.pageId && ch.pages.some(p => p.id === f.pageId));
+            });
+            delete appData.postIts;
+        }
+        appData.chapters.forEach(ch => { if (ch.content && !ch.pages) { ch.pages = [{id:'pg_'+Date.now(), content:ch.content}]; delete ch.content; } if (!ch.pages) ch.pages = []; if (!ch.flags) ch.flags = []; });
+    } else {
+        const dId = 'ch_' + Date.now();
+        appData.chapters.push({id:dId, title:"Chapter 1: The Beginning", pages:[{id:'pg_'+Date.now(), content:"<h2 class='page-title'>Chapter 1: The Beginning</h2><p>Start writing your masterpiece here... Try adding 'John' as a keyword, then replace it with 'Jack'.</p>"}], flags:[]});
+        activeChapterId = dId; saveData();
+    }
+    if (!appData.chapters || appData.chapters.length === 0) { const nId = 'ch_' + Date.now(); appData.chapters.push({id:nId, title:"Chapter 1", pages:[{id:'pg_'+Date.now(), content:"<h2 class='page-title'>Chapter 1</h2><p><br></p>"}], flags:[]}); activeChapterId = nId; saveData(); }
+    if (!activeChapterId || !appData.chapters.find(c => c.id === activeChapterId)) activeChapterId = appData.chapters[0].id;
+}
+
+function saveData() {
+    const ac = appData.chapters.find(c => c.id === activeChapterId);
+    if (ac && !document.body.classList.contains('readonly-mode')) {
+        ac.pages = []; 
+        document.querySelectorAll('#pagesWrapper .page').forEach(el => ac.pages.push({id:el.dataset.id, content:getCleanHTML(el)}));
+        ac.flags = [];
+        document.querySelectorAll('.canvas-flag').forEach(el => {
+            ac.flags.push({ id: el.dataset.id, pageId: el.dataset.pageId, y: parseFloat(el.style.top), isRight: el.classList.contains('right'), color: el.querySelector('.flag-body').style.backgroundColor, text: el.querySelector('.flag-text').value });
+        });
+    }
+    localStorage.setItem(DB_KEY, JSON.stringify(appData));
+    if (currentUser) db.ref('users/' + currentUser.uid + '/appData').set(appData).catch(err => console.error("Sync failed:", err));
+}
+function debouncedSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(saveData, 2000); }
+
+function renderUI() { renderChapters(); if (!document.body.classList.contains('readonly-mode')) { renderActiveChapterContent(); renderCanvasPostIts(); } LoreSystem.renderKeywords(); LoreSystem.highlightKeywords(); }
+
+function switchChapter(newId) {
+    if (newId === activeChapterId || document.body.classList.contains('readonly-mode')) return;
+    saveData(); // 1. Save current text and flags to the old chapter
+    activeChapterId = newId; // 2. Set new active ID
+    renderUI(); // 3. Re-render editor with new chapter's data and flags
+}
+
+function renderChapters() {
+    chapterList.innerHTML = '';
+    appData.chapters.forEach(chapter => {
+        const li = document.createElement('li');
+        li.className = 'chapter-item' + (chapter.id === activeChapterId ? ' active' : '');
+        li.innerHTML = `<span class="chapter-title-text">${chapter.title}</span><div class="chapter-actions"><button class="chapter-icon-btn" data-action="rename" data-id="${chapter.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="chapter-icon-btn" data-action="delete" data-id="${chapter.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`;
+        li.addEventListener('click', e => { if (!e.target.closest('.chapter-actions')) switchChapter(chapter.id); });
+        li.querySelector('[data-action="rename"]').addEventListener('click', e => { e.stopPropagation(); const ch = appData.chapters.find(c => c.id === chapter.id); CustomUI.prompt('Rename Chapter:', ch.title, newTitle => { if (newTitle && newTitle.trim()) { ch.title = newTitle.trim(); saveData(); renderUI(); } }); });
+        li.querySelector('[data-action="delete"]').addEventListener('click', e => { e.stopPropagation(); CustomUI.confirm(`Delete "${chapter.title}"?`, confirmed => { if (confirmed) { appData.chapters = appData.chapters.filter(c => c.id !== chapter.id); if (appData.chapters.length === 0) { const nId = 'ch_' + Date.now(); appData.chapters.push({id:nId, title:"Chapter 1", pages:[{id:'pg_'+Date.now(), content:"<h2 class='page-title'>Chapter 1</h2><p><br></p>"}], flags:[]}); activeChapterId = nId; } else { activeChapterId = appData.chapters[0].id; } saveData(); renderUI(); } }); });
+        chapterList.appendChild(li);
+    });
+}
+
+function createPageElement(id, content) { const el = document.createElement('div'); el.className = 'page'; el.id = id || 'pg_' + Date.now(); el.dataset.id = el.id; el.contentEditable = true; el.spellcheck = false; el.innerHTML = content || '<p><br></p>'; return el; }
+function renderActiveChapterContent() { const ac = appData.chapters.find(c => c.id === activeChapterId); pagesWrapper.innerHTML = ''; if (ac && ac.pages.length > 0) { ac.pages.forEach(pg => pagesWrapper.appendChild(createPageElement(pg.id, pg.content))); } else { const np = createPageElement(); pagesWrapper.appendChild(np); if (ac) ac.pages = [{id:np.dataset.id, content:np.innerHTML}]; } }
+function renderCanvasPostIts() { document.querySelectorAll('.canvas-flag').forEach(el => el.remove()); if (document.body.classList.contains('readonly-mode')) return; const ac = appData.chapters.find(c => c.id === activeChapterId); if (!ac || !ac.flags) return; ac.flags.forEach(f => { const pe = document.querySelector(`.page[data-id="${f.pageId}"]`); if (pe) createCanvasFlag(f.y, f, pe); }); }
+
+let dragData = null;
+function createCanvasFlag(y, data = {}, pageEl) {
+    const flag = document.createElement('div'); flag.className = 'canvas-flag' + (data.isRight ? ' right' : ''); flag.setAttribute('contenteditable', 'false'); flag.style.top = `${y}px`; flag.style.left = data.isRight ? 'auto' : '10px'; flag.style.right = data.isRight ? '10px' : 'auto'; const color = data.color || POST_IT_COLORS[0];
+    flag.innerHTML = `<div class="flag-body" style="background-color:${color}"></div><div class="flag-popover"><textarea class="flag-text" placeholder="Lore note...">${data.text || ''}</textarea><div class="flag-colors">${POST_IT_COLORS.map(c => `<span class="flag-dot" style="background:${c}" data-color="${c}"></span>`).join('')}</div><button class="flag-delete-btn">Delete Note</button></div>`; 
+    flag.dataset.id = data.id || 'pit_' + Date.now(); flag.dataset.pageId = pageEl.dataset.id;
+    flag.querySelectorAll('.flag-dot').forEach(dot => { dot.addEventListener('mousedown', e => e.stopPropagation()); dot.addEventListener('touchstart', e => e.stopPropagation()); dot.addEventListener('click', e => { e.stopPropagation(); flag.querySelector('.flag-body').style.backgroundColor = dot.dataset.color; debouncedSave(); }); });
+    const ta = flag.querySelector('.flag-text'); ta.addEventListener('input', e => { e.stopPropagation(); debouncedSave(); }); ta.addEventListener('mousedown', e => e.stopPropagation()); ta.addEventListener('touchstart', e => e.stopPropagation()); ta.addEventListener('keydown', e => { if (e.target.tagName === 'TEXTAREA') { e.stopPropagation(); return; } }); ta.addEventListener('keyup', e => { if (e.target.tagName === 'TEXTAREA') e.stopPropagation(); });
+    const dbtn = flag.querySelector('.flag-delete-btn'); dbtn.addEventListener('mousedown', e => e.stopPropagation()); dbtn.addEventListener('click', e => { e.stopPropagation(); const ac = appData.chapters.find(c => c.id === activeChapterId); ac.flags = ac.flags.filter(f => f.id !== flag.dataset.id); flag.remove(); saveData(); });
+    flag.addEventListener('mousedown', e => startDrag(e, false, flag, pageEl)); flag.addEventListener('touchstart', e => startDrag(e, true, flag, pageEl), {passive:false});
+    pageEl.appendChild(flag); 
+    const ac = appData.chapters.find(c => c.id === activeChapterId);
+    if (!data.id) { ac.flags.push({id:flag.dataset.id, pageId:pageEl.dataset.id, text:'', color:POST_IT_COLORS[0], y:y, isRight:data.isRight || false}); debouncedSave(); } 
+    return flag;
+}
+function startDrag(e, isTouch, el, pageEl) { e.preventDefault(); const cY = isTouch ? e.touches[0].clientY : e.clientY; dragData = {el, pageEl, startY:cY, moved:false}; el.style.zIndex = 100; }
+function moveDrag(e, isTouch) { if (!dragData) return; e.preventDefault(); const cY = isTouch ? e.touches[0].clientY : e.clientY, cX = isTouch ? e.touches[0].clientX : e.clientX; if (Math.abs(cY - dragData.startY) > 3) dragData.moved = true; const pr = dragData.pageEl.getBoundingClientRect(); let nT = cY - pr.top; nT = Math.max(0, Math.min(nT, pr.height - 40)); dragData.el.style.top = `${nT}px`; const pc = pr.left + pr.width / 2; if (cX < pc) { dragData.el.style.left = '10px'; dragData.el.style.right = 'auto'; dragData.el.classList.remove('right'); } else { dragData.el.style.left = 'auto'; dragData.el.style.right = '10px'; dragData.el.classList.add('right'); } }
+function endDrag() { if (!dragData) return; if (!dragData.moved) { document.querySelectorAll('.canvas-flag.expanded').forEach(f => { if (f !== dragData.el) f.classList.remove('expanded'); }); dragData.el.classList.toggle('expanded'); } dragData.el.style.zIndex = 10; debouncedSave(); dragData = null; }
+
+function handlePagination(pageEl) { if (pageEl.scrollHeight <= pageEl.clientHeight) return; const sel = window.getSelection(); let marker = null; if (sel.rangeCount > 0 && pageEl.contains(sel.anchorNode)) { const range = sel.getRangeAt(0); marker = document.createElement('span'); marker.id = '__caret_marker__'; range.insertNode(marker); } let nextPage = pageEl.nextElementSibling; if (!nextPage || !nextPage.classList.contains('page')) { nextPage = createPageElement('pg_' + Date.now(), '<p><br></p>'); pageEl.after(nextPage); } while (pageEl.scrollHeight > pageEl.clientHeight && pageEl.childNodes.length > 0) { const lc = pageEl.lastElementChild; if (!lc) break; if (lc.id === '__caret_marker__') break; nextPage.insertBefore(lc, nextPage.firstChild); } if (marker) { const nm = document.getElementById('__caret_marker__'); if (nm) { const te = nm.parentElement; const nr = document.createRange(); nr.setStartAfter(nm); nr.collapse(true); sel.removeAllRanges(); sel.addRange(nr); nm.remove(); te.focus(); } } handlePagination(nextPage); }
+function handlePageDeletion(e) { if (e.key === 'Backspace' || e.key === 'Delete') { const pe = e.target.closest('.page'); if (!pe) return; const ac = appData.chapters.find(c => c.id === activeChapterId); if (ac && ac.pages.length > 1) { const isEmpty = pe.innerText.trim() === ''; if (isEmpty) { e.preventDefault(); const pi = ac.pages.findIndex(p => p.id === pe.dataset.id); ac.flags = ac.flags.filter(f => f.pageId !== pe.dataset.id); pe.remove(); ac.pages.splice(pi, 1); const pp = pagesWrapper.children[pi - 1]; if (pp) { pp.focus(); const r = document.createRange(); r.selectNodeContents(pp); r.collapse(false); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } saveData(); } } } }
+
+function toggleReadOnly() {
+    const isRO = document.body.classList.toggle('readonly-mode');
+    const tb = document.querySelector('.editor-toolbar');
+    if (isRO) {
+        saveData(); tb.style.display = 'none';
+        pagesWrapper.innerHTML = '<div class="compiled-view"></div>';
+        const cv = pagesWrapper.querySelector('.compiled-view');
+        appData.chapters.forEach(ch => {
+            const content = ch.pages.map(p => p.content).join('');
+            const chDiv = document.createElement('div');
+            chDiv.innerHTML = `<h2>${ch.title}</h2><div class="compiled-content">${content}</div>`;
+            cv.appendChild(chDiv);
+        });
+        $('readonlyToggle').classList.add('active');
+    } else {
+        tb.style.display = 'flex';
+        $('readonlyToggle').classList.remove('active');
+        renderActiveChapterContent(); renderCanvasPostIts(); LoreSystem.highlightKeywords();
+    }
+}
+
+function clearFindHighlights() { const marks = pagesWrapper.querySelectorAll('mark.find-match, mark.find-active'); marks.forEach(m => { const t = document.createTextNode(m.textContent); m.parentNode.replaceChild(t, m); }); pagesWrapper.normalize(); findMatches = []; findIndex = -1; }
+function performFind(query) { clearFindHighlights(); if (!query) { findCounter.innerText = "0 of 0"; return; } const walker = document.createTreeWalker(pagesWrapper, NodeFilter.SHOW_TEXT, null, false); const textNodes = []; let node; while (node = walker.nextNode()) { if (node.parentNode.nodeName !== 'MARK' && node.nodeValue.trim() !== '') textNodes.push(node); } const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); textNodes.forEach(tn => { const text = tn.nodeValue; let li = 0, m; const frag = document.createDocumentFragment(); let hm = false; while ((m = regex.exec(text)) !== null) { hm = true; frag.appendChild(document.createTextNode(text.substring(li, m.index))); const mark = document.createElement('mark'); mark.className = 'find-match'; mark.textContent = m[0]; frag.appendChild(mark); findMatches.push(mark); li = regex.lastIndex; } if (hm) { frag.appendChild(document.createTextNode(text.substring(li))); tn.parentNode.replaceChild(frag, tn); } }); if (findMatches.length > 0) { findIndex = 0; updateFindActive(); } else { findCounter.innerText = "0 of 0"; } }
+function updateFindActive() { findMatches.forEach((m, i) => m.classList.toggle('find-active', i === findIndex)); findCounter.innerText = `${findIndex + 1} of ${findMatches.length}`; if (findMatches[findIndex]) findMatches[findIndex].scrollIntoView({behavior:'smooth', block:'center'}); }
+function navigateFind(dir) { if (findMatches.length === 0) return; findIndex += dir; if (findIndex >= findMatches.length) findIndex = 0; if (findIndex < 0) findIndex = findMatches.length - 1; updateFindActive(); }
+
+const LoreSystem = {
+    init() { this.setupTabSwitching(); this.setupKeywordInputs(); },
+    setupTabSwitching() { document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); btn.classList.add('active'); $(btn.dataset.tab + 'Tab').classList.add('active'); })); },
+    setupKeywordInputs() { $('addKeywordBtn').addEventListener('click', () => { const ni = $('newKeywordInput'), nn = $('newKeywordNotes'), name = ni.value.trim(); if (name) { appData.keywords[name] = {notes:nn.value.trim() || "No lore notes yet.", active:true, partialMatch:false, bold:false, italic:false, textColor:''}; ni.value = ''; nn.value = ''; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); } }); },
+    renderKeywords() { 
+        const list = $('keywordList'); list.innerHTML = ''; const pt = pagesWrapper.innerText.toLowerCase(); 
+        const eyeOpen = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+        const eyeClosed = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+        const trashIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
+        Object.keys(appData.keywords).forEach(name => { 
+            const d = appData.keywords[name]; if (d.partialMatch === undefined) d.partialMatch = false; if (d.bold === undefined) d.bold = false; if (d.italic === undefined) d.italic = false; if (d.textColor === undefined) d.textColor = ''; 
+            const sr = d.partialMatch ? new RegExp(this.escapeRegex(name), 'gi') : new RegExp(`\\b${this.escapeRegex(name)}\\b`, 'gi'); const m = pt.match(sr); const c = m ? m.length : 0; 
+            const li = document.createElement('li'); li.className = 'keyword-item'; 
+            li.innerHTML = `<div class="keyword-main"><span class="keyword-name">${name}</span><div class="keyword-actions-bar" style="width:auto;margin:0;"><button class="keyword-icon-btn" data-action="toggle" data-name="${name}">${d.active ? eyeOpen : eyeClosed}</button><button class="keyword-icon-btn" data-action="delete" data-name="${name}">${trashIcon}</button></div></div><div class="keyword-notes">${d.notes}</div><div class="keyword-actions-bar"><button class="keyword-action-btn" data-action="edit" data-name="${name}">Edit Lore</button><button class="keyword-action-btn" data-action="replace" data-name="${name}">Replace Word</button><button class="keyword-action-btn" data-action="bake" data-name="${name}">Bake Formats</button><button class="keyword-action-btn ${d.partialMatch ? 'active' : ''}" data-action="toggle-partial" data-name="${name}">${d.partialMatch ? 'Partial' : 'Exact'}</button><span class="keyword-stat">${c} mentions</span></div><div class="keyword-format-bar"><div class="fmt-btn ${d.bold ? 'active' : ''}" data-action="fmt-bold" data-name="${name}" style="font-weight:bold;">B</div><div class="fmt-btn ${d.italic ? 'active' : ''}" data-action="fmt-italic" data-name="${name}" style="font-style:italic;">I</div><input type="color" class="fmt-color" data-action="fmt-color" data-name="${name}" value="${d.textColor || '#4A4A4A'}"></div>`; 
+            list.appendChild(li); 
+        }); 
+        list.querySelectorAll('[data-action="toggle"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].active = !appData.keywords[n].active; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); })); 
+        list.querySelectorAll('[data-action="toggle-partial"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].partialMatch = !appData.keywords[n].partialMatch; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); })); 
+        list.querySelectorAll('[data-action="delete"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; CustomUI.confirm(`Delete keyword "${n}"?`, c => { if (c) { delete appData.keywords[n]; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); } }); })); 
+        list.querySelectorAll('[data-action="edit"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; CustomUI.prompt(`Edit lore notes for "${n}":`, appData.keywords[n].notes, nn => { if (nn !== null) { appData.keywords[n].notes = nn.trim() || "No lore notes yet."; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); } }); })); 
+        list.querySelectorAll('[data-action="replace"]').forEach(btn => btn.addEventListener('click', e => this.triggerGlobalReplace(e.currentTarget.dataset.name)));
+        list.querySelectorAll('[data-action="bake"]').forEach(btn => btn.addEventListener('click', e => this.triggerBakeFormats(e.currentTarget.dataset.name)));
+        list.querySelectorAll('[data-action="fmt-bold"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].bold = !appData.keywords[n].bold; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); })); 
+        list.querySelectorAll('[data-action="fmt-italic"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].italic = !appData.keywords[n].italic; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); })); 
+        list.querySelectorAll('[data-action="fmt-color"]').forEach(inp => inp.addEventListener('input', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].textColor = e.target.value; debouncedSave(); this.highlightKeywords(); }));
+    },
+    highlightKeywords() { 
+        const sel = window.getSelection(); let marker = null; if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) { const range = sel.getRangeAt(0); marker = document.createElement('span'); marker.id = '__caret_marker__'; range.insertNode(marker); } 
+        pagesWrapper.querySelectorAll('span.keyword-span').forEach(el => { const text = document.createTextNode(el.textContent); el.parentNode.replaceChild(text, el); }); pagesWrapper.normalize(); 
+        const walker = document.createTreeWalker(pagesWrapper, NodeFilter.SHOW_TEXT, { acceptNode: function(node) { if (!node.nodeValue || node.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT; if (node.parentNode.nodeName === 'MARK' || (node.parentNode.classList && node.parentNode.classList.contains('keyword-span'))) return NodeFilter.FILTER_REJECT; let p = node.parentNode; while (p && p !== pagesWrapper) { if (p.classList && p.classList.contains('canvas-flag')) return NodeFilter.FILTER_REJECT; p = p.parentNode; } return NodeFilter.FILTER_ACCEPT; } }, false); 
+        const textNodes = []; let node; while (node = walker.nextNode()) textNodes.push(node); 
+        const exactWords = [], partialWords = []; Object.keys(appData.keywords).forEach(k => { if (appData.keywords[k].active) { if (appData.keywords[k].partialMatch) partialWords.push(k); else exactWords.push(k); } }); 
+        let patternStr = ''; if (exactWords.length > 0) patternStr += `\\b(${exactWords.map(this.escapeRegex).join('|')})\\b`; if (partialWords.length > 0) { if (patternStr.length > 0) patternStr += '|'; patternStr += `(${partialWords.map(this.escapeRegex).join('|')})`; } 
+        if (patternStr !== '') { 
+            const regex = new RegExp(patternStr, 'gi'); 
+            textNodes.forEach(textNode => { const text = textNode.nodeValue; if (!regex.test(text)) return; regex.lastIndex = 0; let li = 0, m; const frag = document.createDocumentFragment(); let hm = false; while ((m = regex.exec(text)) !== null) { hm = true; frag.appendChild(document.createTextNode(text.substring(li, m.index))); const span = document.createElement('span'); const mn = Object.keys(appData.keywords).find(k => k.toLowerCase() === m[0].toLowerCase()); const kd = appData.keywords[mn]; span.className = 'keyword-span'; if (kd) { if (kd.bold) span.style.fontWeight = 'bold'; if (kd.italic) span.style.fontStyle = 'italic'; if (kd.textColor) span.style.color = kd.textColor; span.dataset.notes = kd.notes || ''; } span.textContent = m[0]; frag.appendChild(span); li = regex.lastIndex; } if (hm) { frag.appendChild(document.createTextNode(text.substring(li))); textNode.parentNode.replaceChild(frag, textNode); } }); 
+        } 
+        if (marker) { const nm = document.getElementById('__caret_marker__'); if (nm) { const nr = document.createRange(); nr.setStartAfter(nm); nr.collapse(true); sel.removeAllRanges(); sel.addRange(nr); nm.remove(); } } 
+    },
+    getOccurrences(name) { const isPartial = appData.keywords[name].partialMatch; const wordRegex = isPartial ? new RegExp(this.escapeRegex(name), 'gi') : new RegExp("\\b" + this.escapeRegex(name) + "\\b", 'gi'); const occurrences = []; document.querySelectorAll('#pagesWrapper .page').forEach(pageEl => { const clone = pageEl.cloneNode(true); clone.querySelectorAll('span.keyword-span,mark.find-match,mark.find-active').forEach(m => m.replaceWith(document.createTextNode(m.textContent))); clone.querySelectorAll('.canvas-flag').forEach(f => f.remove()); const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT, { acceptNode: function(node) { if (!node.nodeValue || node.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT; if (node.parentNode.nodeName === 'MARK') return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT; } }, false); let node; while (node = walker.nextNode()) { const originalText = node.nodeValue; wordRegex.lastIndex = 0; let match; while ((match = wordRegex.exec(originalText)) !== null) { const start = Math.max(0, match.index - 20); const end = Math.min(originalText.length, wordRegex.lastIndex + 20); const context = (start > 0 ? "..." : "") + originalText.substring(start, end).trim() + (end < originalText.length ? "..." : ""); occurrences.push(context); } } }); return occurrences; },
+    triggerGlobalReplace(oldName) { CustomUI.prompt(`Replace all instances of "${oldName}" with:`, oldName, newName => { if (!newName || newName === oldName) return; const occurrences = this.getOccurrences(oldName); if (occurrences.length === 0) { CustomUI.alert(`No occurrences of "${oldName}" found.`); return; } this.showReviewModal("Review Global Replacement", "Select instances to replace.", oldName, newName, occurrences, (accepted, oN, nN) => this.applyReplacements(oN, nN, accepted)); }); },
+    triggerBakeFormats(name) { const occurrences = this.getOccurrences(name); if (occurrences.length === 0) { CustomUI.alert(`No occurrences of "${name}" found.`); return; } this.showReviewModal("Bake Formats Permanently", "Select instances to bake formatting into the text data.", name, name, occurrences, (accepted, n) => this.applyBake(n, accepted)); },
+    showReviewModal(title, msg, oldName, newName, occurrences, callback) { 
+        const rl = $('reviewList'); rl.innerHTML = ''; 
+        occurrences.forEach((ctx, index) => { const li = document.createElement('li'); li.className = 'history-item review-item'; const isPartial = appData.keywords[oldName].partialMatch; const rs = isPartial ? this.escapeRegex(oldName) : `\\b${this.escapeRegex(oldName)}\\b`; const safeCtx = ctx.replace(new RegExp(rs, 'gi'), `<strong>${oldName}</strong>`); li.innerHTML = `<label class="review-label"><input type="checkbox" class="review-checkbox" checked data-index="${index}"><span class="review-text">${safeCtx}</span></label>`; rl.appendChild(li); }); 
+        $('reviewModalTitle').innerText = title; $('reviewModal').classList.remove('hidden'); 
+        reviewCallback = () => { const cbs = document.querySelectorAll('.review-item .review-checkbox'); const accepted = Array.from(cbs).map(cb => cb.checked); callback(accepted, oldName, newName); }; 
+    },
+    applyReplacements(oldName, newName, acceptedStatus) { 
+        const isPartial = appData.keywords[oldName].partialMatch; const regex = isPartial ? new RegExp(this.escapeRegex(oldName), 'gi') : new RegExp("\\b" + this.escapeRegex(oldName) + "\\b", 'gi'); let idx = 0; 
+        document.querySelectorAll('#pagesWrapper .page').forEach(pageEl => { 
+            pageEl.querySelectorAll('span.keyword-span,mark.find-match,mark.find-active').forEach(m => m.replaceWith(document.createTextNode(m.textContent))); pageEl.normalize(); 
+            const walker = document.createTreeWalker(pageEl, NodeFilter.SHOW_TEXT, { acceptNode: function(node) { if (!node.nodeValue || node.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT; if (node.parentNode.nodeName === 'MARK') return NodeFilter.FILTER_REJECT; let p = node.parentNode; while (p && p !== pageEl) { if (p.classList && p.classList.contains('canvas-flag')) return NodeFilter.FILTER_REJECT; p = p.parentNode; } return NodeFilter.FILTER_ACCEPT; } }, false); 
+            let node; let nodesToUpdate = []; 
+            while (node = walker.nextNode()) { const originalText = node.nodeValue; regex.lastIndex = 0; let match; let li = 0; let newText = ''; let hm = false; while ((match = regex.exec(originalText)) !== null) { hm = true; const isAccepted = acceptedStatus[idx]; idx++; newText += originalText.substring(li, match.index); if (isAccepted) newText += (match[0] === match[0].toUpperCase() ? newName.toUpperCase() : newName); else newText += match[0]; li = regex.lastIndex; } if (hm) { newText += originalText.substring(li); nodesToUpdate.push({node, newText}); } } 
+            nodesToUpdate.forEach(item => item.node.nodeValue = item.newText); 
+        }); 
+        const od = appData.keywords[oldName]; delete appData.keywords[oldName]; appData.keywords[newName] = od; saveData(); renderUI(); 
+    },
+    applyBake(name, acceptedStatus) { 
+        const isPartial = appData.keywords[name].partialMatch; const regex = isPartial ? new RegExp(this.escapeRegex(name), 'gi') : new RegExp("\\b" + this.escapeRegex(name) + "\\b", 'gi'); let idx = 0; const kd = appData.keywords[name]; 
+        let styleStr = ''; if (kd.bold) styleStr += 'font-weight:bold;'; if (kd.italic) styleStr += 'font-style:italic;'; if (kd.textColor) styleStr += `color:${kd.textColor};`; 
+        document.querySelectorAll('#pagesWrapper .page').forEach(pageEl => { 
+            pageEl.querySelectorAll('span.keyword-span,mark.find-match,mark.find-active').forEach(m => m.replaceWith(document.createTextNode(m.textContent))); pageEl.normalize(); 
+            const walker = document.createTreeWalker(pageEl, NodeFilter.SHOW_TEXT, { acceptNode: function(node) { if (!node.nodeValue || node.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT; if (node.parentNode.nodeName === 'MARK') return NodeFilter.FILTER_REJECT; let p = node.parentNode; while (p && p !== pageEl) { if (p.classList && p.classList.contains('canvas-flag')) return NodeFilter.FILTER_REJECT; p = p.parentNode; } return NodeFilter.FILTER_ACCEPT; } }, false); 
+            let node; let nodesToUpdate = []; 
+            while (node = walker.nextNode()) { const originalText = node.nodeValue; regex.lastIndex = 0; let match; let li = 0; let newHTML = ''; let hm = false; while ((match = regex.exec(originalText)) !== null) { hm = true; const isAccepted = acceptedStatus[idx]; idx++; newHTML += originalText.substring(li, match.index); if (isAccepted && styleStr) newHTML += `<span class="baked-keyword" style="${styleStr}">${match[0]}</span>`; else newHTML += match[0]; li = regex.lastIndex; } if (hm) { newHTML += originalText.substring(li); const temp = document.createElement('div'); temp.innerHTML = newHTML; nodesToUpdate.push({node, parent:node.parentNode, frag:document.createDocumentFragment()}); Array.from(temp.childNodes).forEach(c => nodesToUpdate[nodesToUpdate.length - 1].frag.appendChild(c)); } } 
+            nodesToUpdate.forEach(item => item.parent.replaceChild(item.frag, item.node)); 
+        }); 
+        saveData(); renderUI(); 
+    },
+    escapeRegex(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+};
+
+function startAutoVersioning() { setInterval(() => { saveData(); let h = JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; h.push({timestamp:new Date().toLocaleString(), data:JSON.parse(JSON.stringify(appData))}); if (h.length > 20) h.shift(); localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }, 600000); }
+function renderHistory() { let h = JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; const hl = $('historyList'); hl.innerHTML = ''; if (h.length === 0) { hl.innerHTML = '<li class="history-item">No history yet.</li>'; return; } h.slice().reverse().forEach((entry, ri) => { const ai = h.length - 1 - ri; const li = document.createElement('li'); li.className = 'history-item'; li.innerHTML = `<span>${entry.timestamp}</span><button data-index="${ai}">Restore</button>`; li.querySelector('button').addEventListener('click', e => { CustomUI.confirm("Overwrite current state?", c => { if (c) { appData = h[parseInt(e.target.dataset.index)].data; if (!appData.chapters[0].flags) appData.chapters.forEach(ch => ch.flags = []); activeChapterId = appData.chapters[0].id; saveData(); renderUI(); $('historyModal').classList.add('hidden'); } }); }); hl.appendChild(li); }); }
+function syncToolbarState() { const sel = window.getSelection(); if (!sel.rangeCount || !pagesWrapper.contains(sel.anchorNode)) { $('boldBtn').classList.remove('active'); $('italicBtn').classList.remove('active'); return; } try { $('boldBtn').classList.toggle('active', document.queryCommandState('bold')); } catch (e) {} try { $('italicBtn').classList.toggle('active', document.queryCommandState('italic')); } catch (e) {} }
+function handleViewportResize() { if (window.visualViewport) { const vh = window.visualViewport.height; document.documentElement.style.setProperty('--app-height', `${vh}px`); const sel = window.getSelection(); if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) { const range = sel.getRangeAt(0); const rect = range.getBoundingClientRect(); const vv = window.visualViewport; const kt = vv.offsetTop + vv.height; const th = kt - (vv.height * 0.20); if (rect.bottom > th) { canvasContainer.scrollBy({top:rect.bottom - th, behavior:'smooth'}); } } } }
+function setupColorPalette() { 
+    const palette = $('colorPalette'); palette.innerHTML = ''; 
+    appData.colorPresets.forEach((color, i) => { const btn = document.createElement('button'); btn.className = 'preset-color'; btn.style.backgroundColor = color; btn.addEventListener('click', e => { e.preventDefault(); if (e.altKey) { const inp = document.createElement('input'); inp.type = 'color'; inp.addEventListener('change', ev => { appData.colorPresets[i] = ev.target.value; saveData(); setupColorPalette(); }); inp.click(); } else { if (savedToolbarRange) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedToolbarRange); } document.execCommand('foreColor', false, color); } }); palette.appendChild(btn); }); 
+    const wrap = document.createElement('div'); wrap.className = 'popover-actions'; wrap.innerHTML = `<input type="color" id="customColorPicker" value="#D9946B"><select id="presetSlotSelect"><option value="0">Slot 1</option><option value="1">Slot 2</option><option value="2">Slot 3</option><option value="3">Slot 4</option><option value="4">Slot 5</option><option value="5">Slot 6</option><option value="6">Slot 7</option><option value="7">Slot 8</option><option value="8">Slot 9</option><option value="9">Slot 10</option></select><button class="confirm-color-btn" id="confirmColorBtn">Done</button>`; palette.appendChild(wrap); 
+    $('customColorPicker').addEventListener('input', e => { if (savedToolbarRange) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedToolbarRange); } document.execCommand('foreColor', false, e.target.value); }); 
+    $('confirmColorBtn').addEventListener('click', () => { const c = $('customColorPicker').value; const s = $('presetSlotSelect').value; appData.colorPresets[s] = c; saveData(); setupColorPalette(); palette.classList.add('hidden'); }); 
+}
+
+function setupEventListeners() {
+    $('sidebarToggle').addEventListener('click', () => $('sidebar').classList.toggle('collapsed'));
+    $('zenToggle').addEventListener('click', () => { document.body.classList.toggle('zen-mode'); $('zenToggle').classList.toggle('active'); });
+    $('fullscreenToggle').addEventListener('click', () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(err => console.log(err)); else if (document.exitFullscreen) document.exitFullscreen(); });
+    $('readonlyToggle').addEventListener('click', toggleReadOnly);
+    if (window.innerWidth <= 768) $('sidebar').classList.add('collapsed');
+    if (window.visualViewport) { window.visualViewport.addEventListener('resize', handleViewportResize); window.visualViewport.addEventListener('scroll', handleViewportResize); } handleViewportResize();
+
+    $('boldBtn').addEventListener('click', () => document.execCommand('bold'));
+    $('italicBtn').addEventListener('click', () => document.execCommand('italic'));
+    const sl = $('fontSizeSelect'), cw = document.querySelector('.color-popover-wrap');
+    [sl, cw].forEach(el => { el.addEventListener('mousedown', () => { const sel = window.getSelection(); if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) savedToolbarRange = sel.getRangeAt(0).cloneRange(); }); el.addEventListener('touchstart', () => { const sel = window.getSelection(); if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) savedToolbarRange = sel.getRangeAt(0).cloneRange(); }); });
+    sl.addEventListener('change', e => { if (savedToolbarRange) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedToolbarRange); } document.execCommand('fontSize', false, e.target.value); });
+    $('colorToggleBtn').addEventListener('click', () => $('colorPalette').classList.toggle('hidden'));
+    document.addEventListener('selectionchange', syncToolbarState);
+
+    $('findToggle').addEventListener('click', () => { findPanel.classList.toggle('active'); if (findPanel.classList.contains('active')) findInput.focus(); });
+    $('findCloseBtn').addEventListener('click', () => { findPanel.classList.remove('active'); clearFindHighlights(); });
+    let searchDebounce; findInput.addEventListener('input', e => { clearTimeout(searchDebounce); searchDebounce = setTimeout(() => performFind(e.target.value), 300); });
+    $('findNextBtn').addEventListener('click', () => navigateFind(1));
+    $('findPrevBtn').addEventListener('click', () => navigateFind(-1));
+
+    pagesWrapper.addEventListener('input', e => {
+        if (e.target.classList.contains('page')) { const pe = e.target.closest('.page'); if (pe) handlePagination(pe); }
+        clearTimeout(highlightTimeout);
+        highlightTimeout = setTimeout(() => LoreSystem.highlightKeywords(), 500);
+        if (findMatches.length > 0) performFind(findInput.value);
+        debouncedSave();
+    });
+    pagesWrapper.addEventListener('keydown', handlePageDeletion);
+
+    $('addChapterBtn').addEventListener('click', () => { const nId = 'ch_' + Date.now(); const cn = appData.chapters.length + 1; appData.chapters.push({id:nId, title:`Chapter ${cn}: Untitled`, pages:[{id:'pg_'+Date.now(), content:`<h2 class='page-title'>Chapter ${cn}: Untitled</h2><p><br></p>`}], flags:[]}); switchChapter(nId); });
+
+    document.addEventListener('mousemove', e => moveDrag(e, false));
+    document.addEventListener('touchmove', e => moveDrag(e, true), {passive:false});
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchend', endDrag);
+
+    const fab = $('postItFab');
+    fab.addEventListener('mousedown', e => { const pe = document.querySelector('#pagesWrapper .page'); if (!pe) return; const nf = createCanvasFlag(20, {}, pe); startDrag(e, false, nf, pe); });
+    fab.addEventListener('touchstart', e => { e.preventDefault(); const pe = document.querySelector('#pagesWrapper .page'); if (!pe) return; const nf = createCanvasFlag(20, {}, pe); startDrag(e, true, nf, pe); }, {passive:false});
+
+    $('historyToggle').addEventListener('click', () => { renderHistory(); $('historyModal').classList.remove('hidden'); });
+    $('closeHistoryBtn').addEventListener('click', () => $('historyModal').classList.add('hidden'));
+    $('closeReviewBtn').addEventListener('click', () => $('reviewModal').classList.add('hidden'));
+    $('applyReviewBtn').addEventListener('click', () => { if (reviewCallback) reviewCallback(); $('reviewModal').classList.add('hidden'); });
+
+    document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); findPanel.classList.add('active'); findInput.focus(); } if (e.key === 'Escape') { findPanel.classList.remove('active'); clearFindHighlights(); } });
+
+    $('signupBtn').addEventListener('click', () => { const em = $('authEmail').value, ps = $('authPass').value; if (!em || !ps) { CustomUI.alert("Please enter an email and password."); return; } auth.createUserWithEmailAndPassword(em, ps).catch(err => CustomUI.alert(err.message, "Sign Up Error")); });
+    $('loginBtn').addEventListener('click', () => { const em = $('authEmail').value, ps = $('authPass').value; if (!em || !ps) { CustomUI.alert("Please enter an email and password."); return; } auth.signInWithEmailAndPassword(em, ps).catch(err => CustomUI.alert(err.message, "Login Error")); });
+    $('logoutBtn').addEventListener('click', () => auth.signOut());
+}
+
+auth.onAuthStateChanged(user => {
+    const af = $('authForm'), ad = $('authDetails');
+    if (user) {
+        currentUser = user; af.style.display = 'none'; ad.style.display = 'flex'; $('userEmail').innerText = user.email;
+        db.ref('users/' + user.uid + '/appData').once('value').then(snapshot => {
+            if (snapshot.exists()) { const data = snapshot.val(); if (data && data.chapters) { appData = data; if (!appData.colorPresets) appData.colorPresets = ['#000000','#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#FFA500','#800080','#FFC0CB','#008080']; if (appData.postIts && appData.postIts.length) { appData.chapters.forEach(ch => { ch.flags = appData.postIts.filter(f => f.pageId && ch.pages.some(p => p.id === f.pageId)); }); delete appData.postIts; } appData.chapters.forEach(ch => { if (ch.content && !ch.pages) { ch.pages = [{id:'pg_'+Date.now(), content:ch.content}]; delete ch.content; } if (!ch.pages) ch.pages = []; if (!ch.flags) ch.flags = []; }); if (appData.chapters.length > 0) activeChapterId = appData.chapters[0].id; else { loadData(); saveData(); } } else { loadData(); saveData(); } } else { loadData(); db.ref('users/' + user.uid + '/appData').set(appData); }
+            setupColorPalette(); renderUI();
+        }).catch(err => { console.error("Error loading cloud data:", err); loadData(); renderUI(); });
+    } else {
+        currentUser = null; af.style.display = 'flex'; ad.style.display = 'none'; loadData(); setupColorPalette(); renderUI();
+    }
+});
 
-    <header class="app-header">
-        <div class="header-left">
-            <button id="sidebarToggle" class="icon-btn" title="Toggle Chapters">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
-            <h1 class="app-title">Quill & Leaf</h1>
-        </div>
-        
-        <div class="header-right">
-            <button id="historyToggle" class="icon-btn" title="Time Machine">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            </button>
-            <button id="fullscreenToggle" class="icon-btn" title="Full Screen">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"></path><path d="M21 8V5a2 2 0 0 0-2-2h-3"></path><path d="M3 16v3a2 2 0 0 0 2 2h3"></path><path d="M16 21h3a2 2 0 0 0 2-2v-3"></path></svg>
-            </button>
-            <button id="readonlyToggle" class="icon-btn" title="Read-Only Mode">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            </button>
-            <button id="zenToggle" class="icon-btn" title="Zen Mode">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-            </button>
-            <button id="trayToggle" class="icon-btn" title="Toggle Post-its">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3v5h5"></path><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11z"></path></svg>
-            </button>
-        </div>
-    </header>
-
-    <div class="workspace">
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-tabs">
-                <button class="tab-btn active" data-tab="chapters">Chapters</button>
-                <button class="tab-btn" data-tab="keywords">Keywords</button>
-            </div>
-            <div class="tab-content active" id="chaptersTab">
-                <ul class="chapter-list" id="chapterList"></ul>
-                <button class="add-btn" id="addChapterBtn">+ New Chapter</button>
-            </div>
-            <div class="tab-content" id="keywordsTab">
-                <div class="keyword-input-group">
-                    <input type="text" id="newKeywordInput" placeholder="Add character/item...">
-                    <input type="text" id="newKeywordNotes" placeholder="Lore notes...">
-                    <button id="addKeywordBtn" class="add-btn">+ Add Keyword</button>
-                </div>
-                <div class="keyword-stats-title">Mentions in Current Chapter:</div>
-                <ul class="keyword-list" id="keywordList"></ul>
-            </div>
-        </aside>
-
-        <main class="canvas-container" id="canvasContainer">
-            <div id="fuzzySearchContainer" class="fuzzy-search-container hidden">
-                <input type="text" id="fuzzySearchInput" class="fuzzy-search-input" placeholder="Fuzzy search...">
-                <button class="fuzzy-nav-btn" id="fuzzyPrevBtn" title="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"></polyline></svg></button>
-                <button class="fuzzy-nav-btn" id="fuzzyNextBtn" title="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
-                <button class="fuzzy-nav-btn" id="fuzzyCloseBtn" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-            </div>
-
-            <div class="editor-toolbar" id="editorToolbar">
-                <button class="tool-btn" id="boldBtn" title="Bold" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path></svg>
-                </button>
-                <button class="tool-btn" id="italicBtn" title="Italic" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="4" x2="10" y2="4"></line><line x1="14" y1="20" x2="5" y2="20"></line><line x1="15" y1="4" x2="9" y2="20"></line></svg>
-                </button>
-                <div class="tool-divider"></div>
-                <select id="fontSizeSelect" class="tool-select" title="Text Size">
-                    <option value="3">Normal</option><option value="1">Small</option><option value="5">Large</option><option value="6">Huge</option>
-                </select>
-                <label class="tool-color-wrapper" title="Text Color">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>
-                    <input type="color" id="textColorPicker" class="tool-color-input">
-                </label>
-            </div>
-
-            <div class="pages-wrapper" id="pagesWrapper"></div>
-        </main>
-
-        <aside class="tray" id="tray">
-            <h2 class="panel-title">Margin Flags</h2>
-            <div class="tray-flag-label">Drag to Page</div>
-            <div class="post-it-template" id="postItTemplate"></div>
-        </aside>
-    </div>
-
-    <div id="historyModal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Time Machine</h2>
-            <p>Revert to a previous auto-save (Captured every 10 mins).</p>
-            <ul id="historyList" class="history-list"></ul>
-            <div class="modal-actions">
-                <button id="closeHistoryBtn" class="add-btn">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="reviewModal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Review Global Replacement</h2>
-            <p>Select the sentences where you want to apply the replacement. Uncheck any you wish to keep as-is.</p>
-            <ul id="reviewList" class="history-list"></ul>
-            <div class="modal-actions">
-                <button id="closeReviewBtn" class="add-btn">Cancel</button>
-                <button id="applyReviewBtn" class="add-btn primary-btn">Apply Selected</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const DB_KEY = 'quillLeafData';
-            const HISTORY_KEY = 'quillLeafHistory';
-            
-            let appData = { chapters: [], postIts: [], keywords: {}, images: [] };
-            let activeChapterId = null;
-            let saveTimeout = null;
-            let currentHighlights = [];
-            let currentHighlightIndex = -1;
-            let savedToolbarRange = null; 
-
-            const POST_IT_COLORS = ['#F0E6B1', '#D9946B', '#C9D6D3', '#E8D4C8', '#D4C5E2'];
-
-            const chapterList = document.getElementById('chapterList');
-            const canvasContainer = document.getElementById('canvasContainer');
-            const pagesWrapper = document.getElementById('pagesWrapper');
-            const fuzzySearchContainer = document.getElementById('fuzzySearchContainer');
-            const fuzzySearchInput = document.getElementById('fuzzySearchInput');
-
-            document.execCommand("defaultParagraphSeparator", false, "p");
-
-            // --- Custom UI / Modal System ---
-            const CustomUI = {
-                modalContainer: null,
-                init() {
-                    this.modalContainer = document.createElement('div');
-                    this.modalContainer.className = 'modal hidden';
-                    this.modalContainer.id = 'customModal';
-                    this.modalContainer.innerHTML = `
-                        <div class="modal-content">
-                            <h2 id="customModalTitle"></h2>
-                            <p id="customModalMsg" style="margin-bottom: 15px;"></p>
-                            <input type="text" id="customModalInput" class="custom-input" style="display: none;">
-                            <div class="modal-actions">
-                                <button id="customModalCancel" class="add-btn">Cancel</button>
-                                <button id="customModalOk" class="add-btn primary-btn">OK</button>
-                            </div>
-                        </div>
-                    `;
-                    document.body.appendChild(this.modalContainer);
-                },
-                show(title, msg, inputVal, hasCancel, callback) {
-                    document.getElementById('customModalTitle').innerText = title;
-                    document.getElementById('customModalMsg').innerText = msg;
-                    const input = document.getElementById('customModalInput');
-                    const cancelBtn = document.getElementById('customModalCancel');
-                    
-                    if (inputVal !== undefined) {
-                        input.style.display = 'block';
-                        input.value = inputVal;
-                    } else {
-                        input.style.display = 'none';
-                    }
-                    
-                    cancelBtn.style.display = hasCancel ? 'block' : 'none';
-                    this.modalContainer.classList.remove('hidden');
-                    
-                    const okBtn = document.getElementById('customModalOk');
-                    const newOk = okBtn.cloneNode(true);
-                    okBtn.parentNode.replaceChild(newOk, okBtn);
-                    
-                    const newCancel = cancelBtn.cloneNode(true);
-                    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
-
-                    newOk.onclick = () => {
-                        this.modalContainer.classList.add('hidden');
-                        if (callback) callback(input.style.display === 'none' ? true : input.value);
-                    };
-                    newCancel.onclick = () => {
-                        this.modalContainer.classList.add('hidden');
-                        if (callback) callback(input.style.display === 'none' ? false : null);
-                    };
-                },
-                alert(msg, title="Alert") { this.show(title, msg, undefined, false, null); },
-                confirm(msg, callback, title="Confirm") { this.show(title, msg, undefined, true, (res) => callback(res)); },
-                prompt(msg, defaultText, callback, title="Input") { this.show(title, msg, defaultText, true, (res) => callback(res)); }
-            };
-            CustomUI.init();
-
-            // --- Data Management ---
-            // Strips highlight tags and canvas flags to ensure clean raw text is saved to localStorage
-            function getCleanHTML(element) {
-                const clone = element.cloneNode(true);
-                clone.querySelectorAll('mark.keyword-highlight, mark.fuzzy-highlight').forEach(m => {
-                    m.replaceWith(document.createTextNode(m.textContent));
-                });
-                clone.querySelectorAll('.canvas-flag').forEach(f => f.remove());
-                return clone.innerHTML;
-            }
-
-            function loadData() {
-                const storedData = localStorage.getItem(DB_KEY);
-                if (storedData) {
-                    appData = JSON.parse(storedData);
-                    appData.chapters.forEach(ch => {
-                        if (ch.content && !ch.pages) {
-                            ch.pages = [{ id: 'pg_' + Date.now(), content: ch.content }];
-                            delete ch.content;
-                        }
-                        if (!ch.pages) ch.pages = [];
-                    });
-                } else {
-                    const defaultChapterId = 'ch_' + Date.now();
-                    appData.chapters.push({
-                        id: defaultChapterId,
-                        title: "Chapter 1: The Beginning",
-                        pages: [{ id: 'pg_' + Date.now(), content: "<h2 class='page-title'>Chapter 1: The Beginning</h2><p>Start writing your masterpiece here... Try adding 'John' as a keyword, then replace it with 'Jack'.</p>" }]
-                    });
-                    activeChapterId = defaultChapterId;
-                    saveData();
-                }
-                
-                // Guarantee initial page generation on hydration
-                if (!appData.chapters || appData.chapters.length === 0) {
-                    const newId = 'ch_' + Date.now();
-                    appData.chapters.push({ 
-                        id: newId, 
-                        title: "Chapter 1", 
-                        pages: [{ id: 'pg_' + Date.now(), content: "<h2 class='page-title'>Chapter 1</h2><p><br></p>" }] 
-                    });
-                    activeChapterId = newId;
-                    saveData();
-                }
-                if (!activeChapterId || !appData.chapters.find(c => c.id === activeChapterId)) {
-                    activeChapterId = appData.chapters[0].id;
-                }
-            }
-
-            function saveData() {
-                const activeChapter = appData.chapters.find(c => c.id === activeChapterId);
-                if (activeChapter) {
-                    activeChapter.pages = [];
-                    document.querySelectorAll('#pagesWrapper .page').forEach(el => {
-                        activeChapter.pages.push({ id: el.dataset.id, content: getCleanHTML(el) });
-                    });
-                }
-
-                document.querySelectorAll('.canvas-flag').forEach(el => {
-                    const id = el.dataset.id;
-                    const data = appData.postIts.find(p => p.id === id);
-                    if (data) {
-                        data.y = parseFloat(el.style.top);
-                        data.isRight = el.classList.contains('right');
-                        data.color = el.querySelector('.flag-body').style.backgroundColor;
-                        data.text = el.querySelector('.flag-text').value;
-                    }
-                });
-                localStorage.setItem(DB_KEY, JSON.stringify(appData));
-            }
-
-            function debouncedSave() {
-                clearTimeout(saveTimeout);
-                saveTimeout = setTimeout(() => saveData(), 2000);
-            }
-
-            // --- UI Rendering ---
-            function renderUI() {
-                renderChapters();
-                renderActiveChapterContent();
-                renderCanvasPostIts();
-                LoreSystem.renderKeywords();
-                LoreSystem.highlightKeywords();
-            }
-
-            function renderChapters() {
-                chapterList.innerHTML = '';
-                appData.chapters.forEach(chapter => {
-                    const li = document.createElement('li');
-                    li.className = 'chapter-item' + (chapter.id === activeChapterId ? ' active' : '');
-                    li.innerHTML = `
-                        <span class="chapter-title-text">${chapter.title}</span>
-                        <div class="chapter-actions">
-                            <button class="chapter-icon-btn" data-action="rename" data-id="${chapter.id}" title="Rename">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            </button>
-                            <button class="chapter-icon-btn" data-action="delete" data-id="${chapter.id}" title="Delete">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
-                        </div>
-                    `;
-                    
-                    li.addEventListener('click', (e) => {
-                        if (!e.target.closest('.chapter-actions')) {
-                            activeChapterId = chapter.id; renderUI();
-                        }
-                    });
-
-                    li.querySelector('[data-action="rename"]').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const ch = appData.chapters.find(c => c.id === chapter.id);
-                        CustomUI.prompt('Rename Chapter:', ch.title, (newTitle) => {
-                            if (newTitle && newTitle.trim()) {
-                                ch.title = newTitle.trim();
-                                saveData(); renderUI();
-                            }
-                        });
-                    });
-
-                    li.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        CustomUI.confirm(`Delete "${chapter.title}" and all its post-its?`, (confirmed) => {
-                            if (confirmed) {
-                                appData.chapters = appData.chapters.filter(c => c.id !== chapter.id);
-                                const chapterPageIds = chapter.pages.map(p => p.id);
-                                appData.postIts = appData.postIts.filter(p => !chapterPageIds.includes(p.pageId));
-                                
-                                if (appData.chapters.length === 0) {
-                                    const newId = 'ch_' + Date.now();
-                                    appData.chapters.push({ 
-                                        id: newId, 
-                                        title: "Chapter 1", 
-                                        pages: [{ id: 'pg_' + Date.now(), content: "<h2 class='page-title'>Chapter 1</h2><p><br></p>" }] 
-                                    });
-                                    activeChapterId = newId;
-                                } else {
-                                    activeChapterId = appData.chapters[0].id;
-                                }
-                                saveData(); renderUI();
-                            }
-                        });
-                    });
-
-                    chapterList.appendChild(li);
-                });
-            }
-
-            function createPageElement(id, content) {
-                const el = document.createElement('div');
-                el.className = 'page';
-                el.id = id || 'pg_' + Date.now();
-                el.dataset.id = el.id;
-                el.contentEditable = true;
-                el.spellcheck = false; 
-                el.innerHTML = content || '<p><br></p>';
-                return el;
-            }
-
-            function renderActiveChapterContent() {
-                const activeChapter = appData.chapters.find(c => c.id === activeChapterId);
-                pagesWrapper.innerHTML = '';
-                if (activeChapter && activeChapter.pages.length > 0) {
-                    activeChapter.pages.forEach(pg => {
-                        pagesWrapper.appendChild(createPageElement(pg.id, pg.content));
-                    });
-                } else {
-                    const newPg = createPageElement();
-                    pagesWrapper.appendChild(newPg);
-                    if (activeChapter) activeChapter.pages = [{ id: newPg.dataset.id, content: newPg.innerHTML }];
-                }
-            }
-
-            function renderCanvasPostIts() {
-                document.querySelectorAll('.canvas-flag').forEach(el => el.remove());
-                appData.postIts.forEach(p => {
-                    const pageEl = document.querySelector(`.page[data-id="${p.pageId}"]`);
-                    if (pageEl) createCanvasFlag(p.y, p, pageEl);
-                });
-            }
-
-            // --- Post-it Flag System (Appended inside .page) ---
-            let dragData = null;
-
-            function createCanvasFlag(y, data = {}, pageEl) {
-                const flag = document.createElement('div');
-                flag.className = 'canvas-flag' + (data.isRight ? ' right' : '');
-                flag.style.top = `${y}px`;
-                flag.style.left = data.isRight ? 'auto' : '10px';
-                flag.style.right = data.isRight ? '10px' : 'auto';
-                
-                const color = data.color || POST_IT_COLORS[0];
-                flag.innerHTML = `
-                    <div class="flag-body" style="background-color:${color}"></div>
-                    <div class="flag-popover">
-                        <textarea class="flag-text" placeholder="Lore note...">${data.text || ''}</textarea>
-                        <div class="flag-colors">
-                            ${POST_IT_COLORS.map(c => `<span class="flag-dot" style="background:${c}" data-color="${c}"></span>`).join('')}
-                        </div>
-                        <button class="flag-delete-btn">Delete Note</button>
-                    </div>
-                `;
-                flag.dataset.id = data.id || 'pit_' + Date.now();
-
-                flag.querySelectorAll('.flag-dot').forEach(dot => {
-                    dot.addEventListener('mousedown', e => e.stopPropagation());
-                    dot.addEventListener('touchstart', e => e.stopPropagation());
-                    dot.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        flag.querySelector('.flag-body').style.backgroundColor = dot.dataset.color;
-                        debouncedSave();
-                    });
-                });
-
-                const textArea = flag.querySelector('.flag-text');
-                textArea.addEventListener('input', debouncedSave);
-                textArea.addEventListener('mousedown', e => e.stopPropagation());
-                textArea.addEventListener('touchstart', e => e.stopPropagation());
-
-                flag.querySelector('.flag-delete-btn').addEventListener('mousedown', e => e.stopPropagation());
-                flag.querySelector('.flag-delete-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const id = flag.dataset.id;
-                    appData.postIts = appData.postIts.filter(p => p.id !== id);
-                    flag.remove();
-                    saveData();
-                });
-
-                flag.addEventListener('mousedown', (e) => startDrag(e, false, flag, pageEl));
-                flag.addEventListener('touchstart', (e) => startDrag(e, true, flag, pageEl), { passive: false });
-
-                pageEl.appendChild(flag);
-
-                if (!data.id) {
-                    appData.postIts.push({ id: flag.dataset.id, pageId: pageEl.dataset.id, text: '', color: POST_IT_COLORS[0], y: y, isRight: data.isRight || false });
-                    debouncedSave();
-                }
-                return flag;
-            }
-
-            function startDrag(e, isTouch, el, pageEl) {
-                e.preventDefault(); 
-                const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-
-                dragData = {
-                    el: el, 
-                    pageEl: pageEl, 
-                    startY: clientY,
-                    moved: false
-                };
-                el.style.zIndex = 100;
-            }
-
-            function moveDrag(e, isTouch) {
-                if (!dragData) return;
-                e.preventDefault();
-                const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-                const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-                
-                if (Math.abs(clientY - dragData.startY) > 3) dragData.moved = true;
-
-                // Calculate position relative to the live bounding box of the hosting page
-                const pageRect = dragData.pageEl.getBoundingClientRect();
-                
-                let newTop = clientY - pageRect.top;
-                const maxTop = pageRect.height - 40; // flag height
-                newTop = Math.max(0, Math.min(newTop, maxTop));
-                dragData.el.style.top = `${newTop}px`;
-
-                // Determine margin side based on horizontal cursor position
-                const pageCenter = pageRect.left + pageRect.width / 2;
-                if (clientX < pageCenter) {
-                    dragData.el.style.left = '10px';
-                    dragData.el.style.right = 'auto';
-                    dragData.el.classList.remove('right');
-                } else {
-                    dragData.el.style.left = 'auto';
-                    dragData.el.style.right = '10px';
-                    dragData.el.classList.add('right');
-                }
-            }
-
-            function endDrag() {
-                if (!dragData) return;
-                if (!dragData.moved) {
-                    document.querySelectorAll('.canvas-flag.expanded').forEach(f => { if (f !== dragData.el) f.classList.remove('expanded'); });
-                    dragData.el.classList.toggle('expanded');
-                }
-                dragData.el.style.zIndex = 10;
-                debouncedSave();
-                dragData = null;
-            }
-
-            // --- True Pagination & Auto-Deletion ---
-            function handlePagination(pageEl) {
-                if (pageEl.scrollHeight <= pageEl.clientHeight) return;
-                const sel = window.getSelection();
-                let marker = null;
-                if (sel.rangeCount > 0 && pageEl.contains(sel.anchorNode)) {
-                    const range = sel.getRangeAt(0);
-                    marker = document.createElement('span');
-                    marker.id = '__caret_marker__';
-                    range.insertNode(marker);
-                }
-                let nextPage = pageEl.nextElementSibling;
-                if (!nextPage || !nextPage.classList.contains('page')) {
-                    nextPage = createPageElement('pg_' + Date.now(), '<p><br></p>');
-                    pageEl.after(nextPage);
-                }
-                while (pageEl.scrollHeight > pageEl.clientHeight && pageEl.childNodes.length > 0) {
-                    const lastChild = pageEl.lastElementChild;
-                    if (!lastChild) break;
-                    if (lastChild.id === '__caret_marker__') break; 
-                    nextPage.insertBefore(lastChild, nextPage.firstChild);
-                }
-                if (marker) {
-                    const newMarker = document.getElementById('__caret_marker__');
-                    if (newMarker) {
-                        const targetEl = newMarker.parentElement;
-                        const newRange = document.createRange();
-                        newRange.setStartAfter(newMarker);
-                        newRange.collapse(true);
-                        sel.removeAllRanges();
-                        sel.addRange(newRange);
-                        newMarker.remove();
-                        targetEl.focus();
-                    }
-                }
-                handlePagination(nextPage);
-            }
-
-            function handlePageDeletion(e) {
-                if (e.key === 'Backspace' || e.key === 'Delete') {
-                    const pageEl = e.target.closest('.page');
-                    if (!pageEl) return;
-
-                    const activeChapter = appData.chapters.find(c => c.id === activeChapterId);
-                    if (activeChapter && activeChapter.pages.length > 1) {
-                        const isEmpty = pageEl.innerText.trim() === '';
-                        if (isEmpty) {
-                            e.preventDefault();
-                            const pageIndex = activeChapter.pages.findIndex(p => p.id === pageEl.dataset.id);
-                            
-                            appData.postIts = appData.postIts.filter(p => p.pageId !== pageEl.dataset.id);
-                            
-                            pageEl.remove();
-                            activeChapter.pages.splice(pageIndex, 1);
-                            
-                            const prevPageEl = pagesWrapper.children[pageIndex - 1];
-                            if (prevPageEl) {
-                                prevPageEl.focus();
-                                const range = document.createRange();
-                                range.selectNodeContents(prevPageEl);
-                                range.collapse(false);
-                                const sel = window.getSelection();
-                                sel.removeAllRanges();
-                                sel.addRange(range);
-                            }
-                            saveData();
-                        }
-                    }
-                }
-            }
-
-            // --- Fuzzy Search ---
-            function getLevenshtein(a, b) {
-                const m = a.length, n = b.length;
-                const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
-                for (let i = 0; i <= m; i++) dp[i][0] = i;
-                for (let j = 0; j <= n; j++) dp[0][j] = j;
-                for (let i = 1; i <= m; i++) {
-                    for (let j = 1; j <= n; j++) {
-                        if (a[i - 1].toLowerCase() === b[j - 1].toLowerCase()) dp[i][j] = dp[i - 1][j - 1];
-                        else dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
-                    }
-                }
-                return dp[m][n];
-            }
-
-            function clearHighlights() {
-                const marks = pagesWrapper.querySelectorAll('mark.fuzzy-highlight');
-                marks.forEach(mark => { const text = document.createTextNode(mark.textContent); mark.parentNode.replaceChild(text, mark); });
-                pagesWrapper.normalize();
-                currentHighlights = [];
-                currentHighlightIndex = -1;
-            }
-
-            function performFuzzySearch(query) {
-                clearHighlights();
-                if (!query) return;
-                const walker = document.createTreeWalker(pagesWrapper, NodeFilter.SHOW_TEXT, null, false);
-                const textNodes = [];
-                let node;
-                while (node = walker.nextNode()) { if (node.parentNode.nodeName !== 'MARK') textNodes.push(node); }
-                const regex = /\b(\w+)\b/g; 
-                textNodes.forEach(textNode => {
-                    const text = textNode.nodeValue;
-                    let lastIndex = 0, match;
-                    let fragment = document.createDocumentFragment();
-                    let hasMatch = false;
-                    while ((match = regex.exec(text)) !== null) {
-                        const word = match[0];
-                        if (word.length >= query.length - 1 && word.length <= query.length + 1) {
-                            const dist = getLevenshtein(word, query);
-                            if (dist <= 1) {
-                                hasMatch = true;
-                                fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
-                                const mark = document.createElement('mark');
-                                mark.className = 'fuzzy-highlight';
-                                mark.textContent = word;
-                                fragment.appendChild(mark);
-                                currentHighlights.push(mark);
-                                lastIndex = regex.lastIndex;
-                            }
-                        }
-                    }
-                    if (hasMatch) {
-                        fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
-                        textNode.parentNode.replaceChild(fragment, textNode);
-                    }
-                });
-                if (currentHighlights.length > 0) navigateHighlight(0);
-            }
-
-            function navigateHighlight(direction) {
-                if (currentHighlights.length === 0) return;
-                if (currentHighlightIndex >= 0) currentHighlights[currentHighlightIndex].classList.remove('active');
-                currentHighlightIndex += direction;
-                if (currentHighlightIndex >= currentHighlights.length) currentHighlightIndex = 0;
-                if (currentHighlightIndex < 0) currentHighlightIndex = currentHighlights.length - 1;
-                const activeMark = currentHighlights[currentHighlightIndex];
-                activeMark.classList.add('active');
-                activeMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-
-            // --- Lore System ---
-            const LoreSystem = {
-                init() {
-                    this.setupTabSwitching();
-                    this.setupKeywordInputs();
-                },
-
-                setupTabSwitching() {
-                    document.querySelectorAll('.tab-btn').forEach(btn => {
-                        btn.addEventListener('click', () => {
-                            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                            btn.classList.add('active');
-                            document.getElementById(btn.dataset.tab + 'Tab').classList.add('active');
-                        });
-                    });
-                },
-
-                setupKeywordInputs() {
-                    document.getElementById('addKeywordBtn').addEventListener('click', () => {
-                        const nameInput = document.getElementById('newKeywordInput');
-                        const notesInput = document.getElementById('newKeywordNotes');
-                        const name = nameInput.value.trim();
-                        if (name) {
-                            appData.keywords[name] = { notes: notesInput.value.trim() || "No lore notes yet.", active: true, partialMatch: false };
-                            nameInput.value = ''; notesInput.value = '';
-                            debouncedSave();
-                            this.renderKeywords();
-                            this.highlightKeywords();
-                        }
-                    });
-                },
-
-                renderKeywords() {
-                    const list = document.getElementById('keywordList');
-                    list.innerHTML = '';
-                    const pageText = pagesWrapper.innerText.toLowerCase();
-
-                    const eyeOpen = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-                    const eyeClosed = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-                    const trashIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
-
-                    Object.keys(appData.keywords).forEach(name => {
-                        const data = appData.keywords[name];
-                        if (data.partialMatch === undefined) data.partialMatch = false; 
-                        
-                        const searchRegex = data.partialMatch 
-                            ? new RegExp(this.escapeRegex(name), 'gi') 
-                            : new RegExp(`\\b${this.escapeRegex(name)}\\b`, 'gi');
-                        const matches = pageText.match(searchRegex);
-                        const count = matches ? matches.length : 0;
-
-                        const li = document.createElement('li');
-                        li.className = 'keyword-item';
-                        li.innerHTML = `
-                            <div class="keyword-main">
-                                <span class="keyword-name">${name}</span>
-                                <div class="keyword-actions-bar">
-                                    <button class="keyword-icon-btn" data-action="toggle" data-name="${name}" title="Toggle Highlight">
-                                        ${data.active ? eyeOpen : eyeClosed}
-                                    </button>
-                                    <button class="keyword-icon-btn" data-action="delete" data-name="${name}" title="Delete Keyword">
-                                        ${trashIcon}
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="keyword-notes">${data.notes}</div>
-                            <div class="keyword-actions-bar" style="margin-top: 10px;">
-                                <button class="keyword-action-btn" data-action="edit" data-name="${name}">Edit Lore</button>
-                                <button class="keyword-action-btn" data-action="replace" data-name="${name}">Replace Word</button>
-                                <button class="keyword-action-btn ${data.partialMatch ? 'active' : ''}" data-action="toggle-partial" data-name="${name}" title="Toggle Exact vs Partial Match">
-                                    ${data.partialMatch ? 'Match Partial' : 'Exact Word'}
-                                </button>
-                                <span class="keyword-stat">${count} mentions</span>
-                            </div>
-                        `;
-                        list.appendChild(li);
-                    });
-
-                    list.querySelectorAll('[data-action="toggle"]').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const name = e.currentTarget.dataset.name;
-                            appData.keywords[name].active = !appData.keywords[name].active;
-                            debouncedSave();
-                            this.renderKeywords();
-                            this.highlightKeywords();
-                        });
-                    });
-
-                    list.querySelectorAll('[data-action="toggle-partial"]').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const name = e.currentTarget.dataset.name;
-                            appData.keywords[name].partialMatch = !appData.keywords[name].partialMatch;
-                            debouncedSave();
-                            this.renderKeywords();
-                            this.highlightKeywords();
-                        });
-                    });
-
-                    list.querySelectorAll('[data-action="delete"]').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const name = e.currentTarget.dataset.name;
-                            CustomUI.confirm(`Delete keyword "${name}"?`, (confirmed) => {
-                                if (confirmed) {
-                                    delete appData.keywords[name];
-                                    debouncedSave();
-                                    this.renderKeywords();
-                                    this.highlightKeywords();
-                                }
-                            });
-                        });
-                    });
-
-                    list.querySelectorAll('[data-action="edit"]').forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const name = e.currentTarget.dataset.name;
-                            CustomUI.prompt(`Edit lore notes for "${name}":`, appData.keywords[name].notes, (newNotes) => {
-                                if (newNotes !== null) {
-                                    appData.keywords[name].notes = newNotes.trim() || "No lore notes yet.";
-                                    debouncedSave();
-                                    this.renderKeywords();
-                                    this.highlightKeywords();
-                                }
-                            });
-                        });
-                    });
-
-                    list.querySelectorAll('[data-action="replace"]').forEach(btn => {
-                        btn.addEventListener('click', (e) => this.triggerGlobalReplace(e.currentTarget.dataset.name));
-                    });
-                },
-
-                highlightKeywords() {
-                    const sel = window.getSelection();
-                    let marker = null;
-                    if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) {
-                        const range = sel.getRangeAt(0);
-                        marker = document.createElement('span');
-                        marker.id = '__caret_marker__';
-                        range.insertNode(marker);
-                    }
-                    pagesWrapper.querySelectorAll('mark.keyword-highlight').forEach(mark => {
-                        const text = document.createTextNode(mark.textContent);
-                        mark.parentNode.replaceChild(text, mark);
-                    });
-                    pagesWrapper.normalize();
-
-                    const walker = document.createTreeWalker(pagesWrapper, NodeFilter.SHOW_TEXT, null, false);
-                    const textNodes = [];
-                    let node;
-                    while (node = walker.nextNode()) {
-                        if (node.parentNode.nodeName !== 'MARK' && node.nodeValue.trim() !== '') textNodes.push(node);
-                    }
-
-                    const exactWords = [];
-                    const partialWords = [];
-                    Object.keys(appData.keywords).forEach(k => {
-                        if (appData.keywords[k].active) {
-                            if (appData.keywords[k].partialMatch) partialWords.push(k);
-                            else exactWords.push(k);
-                        }
-                    });
-
-                    let patternStr = '';
-                    if (exactWords.length > 0) {
-                        patternStr += `\\b(${exactWords.map(this.escapeRegex).join('|')})\\b`;
-                    }
-                    if (partialWords.length > 0) {
-                        if (patternStr.length > 0) patternStr += '|';
-                        patternStr += `(${partialWords.map(this.escapeRegex).join('|')})`;
-                    }
-
-                    if (patternStr !== '') {
-                        const regex = new RegExp(patternStr, 'gi');
-                        textNodes.forEach(textNode => {
-                            const text = textNode.nodeValue;
-                            if (!regex.test(text)) return;
-                            regex.lastIndex = 0;
-                            let lastIndex = 0, match;
-                            const fragment = document.createDocumentFragment();
-                            let hasMatch = false;
-
-                            while ((match = regex.exec(text)) !== null) {
-                                hasMatch = true;
-                                fragment.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
-                                const mark = document.createElement('mark');
-                                const matchedName = Object.keys(appData.keywords).find(k => k.toLowerCase() === match[0].toLowerCase());
-                                const keyData = appData.keywords[matchedName];
-                                mark.className = 'keyword-highlight' + (keyData && !keyData.active ? ' inactive' : '');
-                                mark.dataset.keyword = match[0];
-                                mark.dataset.notes = keyData ? keyData.notes : '';
-                                mark.textContent = match[0];
-                                fragment.appendChild(mark);
-                                lastIndex = regex.lastIndex;
-                            }
-                            if (hasMatch) {
-                                fragment.appendChild(document.createTextNode(text.substring(lastIndex)));
-                                textNode.parentNode.replaceChild(fragment, textNode);
-                            }
-                        });
-                    }
-
-                    if (marker) {
-                        const newMarker = document.getElementById('__caret_marker__');
-                        if (newMarker) {
-                            const newRange = document.createRange();
-                            newRange.setStartAfter(newMarker);
-                            newRange.collapse(true);
-                            sel.removeAllRanges();
-                            sel.addRange(newRange);
-                            newMarker.remove();
-                        }
-                    }
-                },
-
-                triggerGlobalReplace(oldName) {
-                    CustomUI.prompt(`Replace all instances of "${oldName}" with:`, oldName, (newName) => {
-                        if (!newName || newName === oldName) return;
-                        
-                        const sentences = [];
-                        const isPartial = appData.keywords[oldName].partialMatch;
-                        const wordRegex = isPartial 
-                            ? new RegExp(this.escapeRegex(oldName), 'i') 
-                            : new RegExp("\\b" + this.escapeRegex(oldName) + "\\b", 'i');
-
-                        // Scanning the raw, clean DOM data directly
-                        document.querySelectorAll('#pagesWrapper .page').forEach(pageEl => {
-                            const clone = pageEl.cloneNode(true);
-                            clone.querySelectorAll('mark.keyword-highlight').forEach(m => {
-                                m.replaceWith(document.createTextNode(m.textContent));
-                            });
-                            const text = clone.innerText.replace(/\s+/g, ' ');
-                            
-                            const sentenceRegex = /[^.!?]+(?:[.!?]+|$)/g;
-                            let match;
-                            while ((match = sentenceRegex.exec(text)) !== null) {
-                                let sentence = match[0].trim();
-                                if (sentence && wordRegex.test(sentence)) {
-                                    sentences.push(sentence);
-                                }
-                            }
-                        });
-
-                        if (sentences.length === 0) {
-                            CustomUI.alert(`No occurrences of "${oldName}" found to replace.`);
-                            return;
-                        }
-
-                        const uniqueSentences = [...new Set(sentences)];
-                        this.showReviewModal(oldName, newName, uniqueSentences);
-                    });
-                },
-
-                showReviewModal(oldName, newName, sentences) {
-                    const reviewList = document.getElementById('reviewList');
-                    reviewList.innerHTML = '';
-
-                    sentences.forEach(sent => {
-                        const li = document.createElement('li');
-                        li.className = 'history-item review-item';
-                        const isPartial = appData.keywords[oldName].partialMatch;
-                        const regexStr = isPartial ? this.escapeRegex(oldName) : `\\b${this.escapeRegex(oldName)}\\b`;
-                        const safeSentence = sent.replace(new RegExp(regexStr, 'gi'), `<strong>${oldName}</strong>`);
-                        li.innerHTML = `
-                            <label class="review-label">
-                                <input type="checkbox" class="review-checkbox" checked>
-                                <span class="review-text">${safeSentence}</span>
-                            </label>
-                        `;
-                        reviewList.appendChild(li);
-                    });
-
-                    document.getElementById('reviewModal').classList.remove('hidden');
-                    
-                    document.getElementById('closeReviewBtn').onclick = () => {
-                        document.getElementById('reviewModal').classList.add('hidden');
-                    };
-                    document.getElementById('applyReviewBtn').onclick = () => {
-                        const accepted = [];
-                        document.querySelectorAll('.review-item').forEach(item => {
-                            if (item.querySelector('.review-checkbox').checked) {
-                                accepted.push(item.querySelector('.review-text').innerText);
-                            }
-                        });
-                        
-                        this.applyReplacements(oldName, newName, accepted);
-                        
-                        const oldData = appData.keywords[oldName];
-                        delete appData.keywords[oldName];
-                        appData.keywords[newName] = oldData;
-                        
-                        saveData();
-                        renderUI(); 
-                        document.getElementById('reviewModal').classList.add('hidden');
-                    };
-                },
-
-                applyReplacements(oldName, newName, acceptedSentences) {
-                    const isPartial = appData.keywords[oldName].partialMatch;
-                    const regex = isPartial 
-                        ? new RegExp(this.escapeRegex(oldName), 'gi') 
-                        : new RegExp("\\b" + this.escapeRegex(oldName) + "\\b", 'gi');
-
-                    // Operate directly on active DOM elements inside the editor
-                    document.querySelectorAll('#pagesWrapper .page').forEach(pageEl => {
-                        // First, strip marks to ensure clean matching
-                        pageEl.querySelectorAll('mark.keyword-highlight, mark.fuzzy-highlight').forEach(m => {
-                            m.replaceWith(document.createTextNode(m.textContent));
-                        });
-                        pageEl.normalize();
-
-                        const blocks = pageEl.querySelectorAll('p, div, h1, h2, h3, h4, li, blockquote');
-                        blocks.forEach(block => {
-                            const blockText = block.textContent.replace(/\s+/g, ' ').trim();
-                            const isAccepted = acceptedSentences.some(accSent => 
-                                blockText.toLowerCase().includes(accSent.toLowerCase())
-                            );
-
-                            if (isAccepted) {
-                                const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT, null, false);
-                                let node;
-                                while (node = walker.nextNode()) {
-                                    const originalText = node.nodeValue;
-                                    if (regex.test(originalText)) {
-                                        regex.lastIndex = 0; 
-                                        node.nodeValue = originalText.replace(regex, (match) => {
-                                            return match === match.toUpperCase() ? newName.toUpperCase() : newName;
-                                        });
-                                    }
-                                }
-                            }
-                        });
-                    });
-                },
-
-                escapeRegex(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-            };
-
-            // --- Time Machine ---
-            function startAutoVersioning() {
-                setInterval(() => {
-                    saveData();
-                    let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
-                    history.push({ timestamp: new Date().toLocaleString(), data: JSON.parse(JSON.stringify(appData)) });
-                    if (history.length > 20) history.shift();
-                    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-                }, 600000); 
-            }
-
-            function renderHistory() {
-                let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
-                const historyList = document.getElementById('historyList');
-                historyList.innerHTML = '';
-                if (history.length === 0) { historyList.innerHTML = '<li class="history-item">No history yet.</li>'; return; }
-                history.slice().reverse().forEach((entry, reverseIndex) => {
-                    const actualIndex = history.length - 1 - reverseIndex;
-                    const li = document.createElement('li');
-                    li.className = 'history-item';
-                    li.innerHTML = `<span>${entry.timestamp}</span><button data-index="${actualIndex}">Restore</button>`;
-                    li.querySelector('button').addEventListener('click', (e) => {
-                        CustomUI.confirm("Overwrite current state with this snapshot?", (confirmed) => {
-                            if (confirmed) {
-                                appData = history[parseInt(e.target.dataset.index)].data;
-                                activeChapterId = appData.chapters[0].id;
-                                saveData();
-                                renderUI();
-                                document.getElementById('historyModal').classList.add('hidden');
-                            }
-                        });
-                    });
-                    historyList.appendChild(li);
-                });
-            }
-
-            // --- Smart Toolbar Sync ---
-            function syncToolbarState() {
-                const selection = window.getSelection();
-                if (!selection.rangeCount || !pagesWrapper.contains(selection.anchorNode)) {
-                    document.getElementById('boldBtn').classList.remove('active');
-                    document.getElementById('italicBtn').classList.remove('active');
-                    return;
-                }
-
-                try {
-                    const isBold = document.queryCommandState('bold');
-                    document.getElementById('boldBtn').classList.toggle('active', isBold);
-                } catch (e) {}
-
-                try {
-                    const isItalic = document.queryCommandState('italic');
-                    document.getElementById('italicBtn').classList.toggle('active', isItalic);
-                } catch (e) {}
-
-                try {
-                    const size = document.queryCommandValue('fontSize');
-                    const select = document.getElementById('fontSizeSelect');
-                    if (size && size !== select.value) {
-                        select.value = size;
-                    }
-                } catch (e) {}
-
-                try {
-                    const color = document.queryCommandValue('foreColor');
-                    const colorPicker = document.getElementById('textColorPicker');
-                    if (color) {
-                        let hexColor = color;
-                        if (color.startsWith('rgb')) {
-                            const rgb = color.match(/\d+/g);
-                            if (rgb && rgb.length >= 3) {
-                                hexColor = '#' + rgb.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
-                            }
-                        }
-                        if (colorPicker.value.toLowerCase() !== hexColor.toLowerCase()) {
-                            colorPicker.value = hexColor;
-                        }
-                    }
-                } catch (e) {}
-            }
-
-            // --- Visual Viewport API (Mobile Keyboard Fix) ---
-            function handleViewportResize() {
-                if (window.visualViewport) {
-                    const vh = window.visualViewport.height;
-                    document.documentElement.style.setProperty('--app-height', `${vh}px`);
-                    
-                    const selection = window.getSelection();
-                    if (selection.rangeCount > 0 && pagesWrapper.contains(selection.anchorNode)) {
-                        const range = selection.getRangeAt(0);
-                        const rect = range.getBoundingClientRect();
-                        
-                        const vv = window.visualViewport;
-                        const keyboardTop = vv.offsetTop + vv.height;
-                        const threshold = keyboardTop - (vv.height * 0.20);
-                        
-                        if (rect.bottom > threshold) {
-                            const canvasRect = canvasContainer.getBoundingClientRect();
-                            const delta = rect.bottom - threshold;
-                            canvasContainer.scrollBy({ top: delta, behavior: 'smooth' });
-                        }
-                    }
-                }
-            }
-
-            // --- UI Toggles & Event Listeners ---
-            function setupEventListeners() {
-                // Exclusive Mobile Toggles
-                document.getElementById('sidebarToggle').addEventListener('click', () => {
-                    document.getElementById('sidebar').classList.toggle('collapsed');
-                    if (window.innerWidth < 768) document.getElementById('tray').classList.add('collapsed');
-                });
-                document.getElementById('trayToggle').addEventListener('click', () => {
-                    document.getElementById('tray').classList.toggle('collapsed');
-                    if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('collapsed');
-                });
-
-                document.getElementById('zenToggle').addEventListener('click', () => {
-                    document.body.classList.toggle('zen-mode');
-                    document.getElementById('zenToggle').classList.toggle('active');
-                });
-                document.getElementById('fullscreenToggle').addEventListener('click', () => {
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen().catch(err => console.log(err));
-                    } else {
-                        if (document.exitFullscreen) document.exitFullscreen();
-                    }
-                });
-                document.getElementById('readonlyToggle').addEventListener('click', () => {
-                    const isReadOnly = document.body.classList.toggle('readonly-mode');
-                    document.querySelectorAll('.page').forEach(p => {
-                        p.contentEditable = isReadOnly ? 'false' : 'true';
-                        p.classList.toggle('readonly');
-                    });
-                    document.getElementById('readonlyToggle').classList.toggle('active');
-                });
-
-                if (window.innerWidth <= 768) {
-                    document.getElementById('sidebar').classList.add('collapsed');
-                    document.getElementById('tray').classList.add('collapsed');
-                }
-
-                if (window.visualViewport) {
-                    window.visualViewport.addEventListener('resize', handleViewportResize);
-                    window.visualViewport.addEventListener('scroll', handleViewportResize);
-                }
-                handleViewportResize(); 
-
-                // Formatting Commands
-                document.getElementById('boldBtn').addEventListener('click', () => document.execCommand('bold'));
-                document.getElementById('italicBtn').addEventListener('click', () => document.execCommand('italic'));
-                
-                const selectEl = document.getElementById('fontSizeSelect');
-                const colorWrap = document.querySelector('.tool-color-wrapper');
-                
-                [selectEl, colorWrap].forEach(el => {
-                    el.addEventListener('mousedown', () => {
-                        const sel = window.getSelection();
-                        if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) {
-                            savedToolbarRange = sel.getRangeAt(0).cloneRange();
-                        }
-                    });
-                    el.addEventListener('touchstart', () => {
-                        const sel = window.getSelection();
-                        if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) {
-                            savedToolbarRange = sel.getRangeAt(0).cloneRange();
-                        }
-                    });
-                });
-
-                selectEl.addEventListener('change', (e) => {
-                    if (savedToolbarRange) {
-                        const sel = window.getSelection();
-                        sel.removeAllRanges();
-                        sel.addRange(savedToolbarRange);
-                    }
-                    document.execCommand('fontSize', false, e.target.value);
-                });
-                
-                document.getElementById('textColorPicker').addEventListener('input', (e) => {
-                    if (savedToolbarRange) {
-                        const sel = window.getSelection();
-                        sel.removeAllRanges();
-                        sel.addRange(savedToolbarRange);
-                    }
-                    document.execCommand('foreColor', false, e.target.value);
-                });
-
-                document.addEventListener('selectionchange', syncToolbarState);
-
-                // Hydration, Typing Flow Protection, and Auto-Deletion
-                pagesWrapper.addEventListener('input', (e) => {
-                    if (e.target.classList.contains('page')) {
-                        const pageEl = e.target.closest('.page');
-                        if (pageEl) handlePagination(pageEl);
-                    }
-                    if (currentHighlights.length > 0) clearHighlights();
-                    
-                    const shouldHighlight = !e.data || /[\s.,;:!?]/.test(e.data) || e.inputType.includes('Delete') || e.inputType.includes('Paste') || e.inputType.includes('Enter');
-                    let highlightTimeout;
-                    if (shouldHighlight) {
-                        clearTimeout(highlightTimeout);
-                        highlightTimeout = setTimeout(() => LoreSystem.highlightKeywords(), 100);
-                    }
-                    
-                    debouncedSave();
-                });
-
-                pagesWrapper.addEventListener('keydown', handlePageDeletion);
-
-                document.getElementById('addChapterBtn').addEventListener('click', () => {
-                    const newId = 'ch_' + Date.now();
-                    const chapNum = appData.chapters.length + 1;
-                    appData.chapters.push({ 
-                        id: newId, 
-                        title: `Chapter ${chapNum}: Untitled`, 
-                        pages: [{ id: 'pg_' + Date.now(), content: `<h2 class='page-title'>Chapter ${chapNum}: Untitled</h2><p><br></p>` }] 
-                    });
-                    activeChapterId = newId;
-                    saveData(); renderUI();
-                });
-
-                document.addEventListener('mousemove', (e) => moveDrag(e, false));
-                document.addEventListener('touchmove', (e) => moveDrag(e, true), { passive: false });
-                document.addEventListener('mouseup', endDrag);
-                document.addEventListener('touchend', endDrag);
-
-                // Margin Flag Template Creation Fix
-                const template = document.getElementById('postItTemplate');
-                template.addEventListener('mousedown', (e) => {
-                    // Find the first active page element in the wrapper
-                    const pageEl = document.querySelector('#pagesWrapper .page');
-                    if (!pageEl) return;
-                    
-                    // Create at y=20 inside that page container
-                    const newFlag = createCanvasFlag(20, {}, pageEl);
-                    startDrag(e, false, newFlag, pageEl);
-                });
-                template.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    const pageEl = document.querySelector('#pagesWrapper .page');
-                    if (!pageEl) return;
-                    
-                    const newFlag = createCanvasFlag(20, {}, pageEl);
-                    startDrag(e, true, newFlag, pageEl);
-                }, { passive: false });
-
-                document.getElementById('historyToggle').addEventListener('click', () => { renderHistory(); document.getElementById('historyModal').classList.remove('hidden'); });
-                document.getElementById('closeHistoryBtn').addEventListener('click', () => document.getElementById('historyModal').classList.add('hidden'));
-
-                document.addEventListener('keydown', (e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-                        e.preventDefault();
-                        fuzzySearchContainer.classList.remove('hidden');
-                        fuzzySearchInput.focus();
-                    }
-                    if (e.key === 'Escape') {
-                        fuzzySearchContainer.classList.add('hidden');
-                        clearHighlights();
-                    }
-                });
-
-                let searchDebounce;
-                fuzzySearchInput.addEventListener('input', (e) => {
-                    clearTimeout(searchDebounce);
-                    searchDebounce = setTimeout(() => performFuzzySearch(e.target.value), 300);
-                });
-                document.getElementById('fuzzyNextBtn').addEventListener('click', () => navigateHighlight(1));
-                document.getElementById('fuzzyPrevBtn').addEventListener('click', () => navigateHighlight(-1));
-                document.getElementById('fuzzyCloseBtn').addEventListener('click', () => { fuzzySearchContainer.classList.add('hidden'); clearHighlights(); });
-            }
-
-            // --- Boot ---
-            loadData();
             setupEventListeners();
-            renderUI();
             LoreSystem.init();
             startAutoVersioning();
         });
