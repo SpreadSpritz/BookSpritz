@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>BookSpritz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#D9946B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BookSpritz">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="app-header">
+<div class="header-left">
+<button id="sidebarToggle" class="icon-btn" title="Toggle Chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+<h1 class="app-title">BookSpritz</h1>
+<span id="saveIndicator" class="save-indicator" title="Auto-save status">Saved</span>
+</div>
+<div class="header-right">
+<button id="settingsToggle" class="icon-btn" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+<button id="statsToggle" class="icon-btn" title="Word Count & Stats" style="position:relative;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg><span id="dailyBadge" class="daily-badge" title="Today's progress"></span></button>
+<button id="exportToggle" class="icon-btn" title="Export Book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+<button id="spellcheckToggle" class="icon-btn active" title="Toggle Spellcheck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/><circle cx="12" cy="12" r="10"/></svg></button>
+<button id="findToggle" class="icon-btn" title="Find (Ctrl+F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+<button id="historyToggle" class="icon-btn" title="Time Machine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
+<button id="fullscreenToggle" class="icon-btn" title="Full Screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+<button id="readonlyToggle" class="icon-btn" title="Read-Only Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+<button id="focusToggle" class="icon-btn" title="Focus Mode (dim other paragraphs)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" opacity="0.4"/></svg></button>
+<button id="zenToggle" class="icon-btn" title="Zen Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+</div>
+</header>
+<div class="workspace">
+<aside class="sidebar" id="sidebar">
+<div class="book-switcher">
+<div class="book-switcher-row">
+<select id="bookSelect" class="book-select" title="Switch book"></select>
+<button id="newBookBtn" class="book-action-btn" title="New Book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+<button id="renameBookBtn" class="book-action-btn" title="Rename Book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+<button id="deleteBookBtn" class="book-action-btn" title="Delete Book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+</div>
+</div>
+<div class="sidebar-tabs">
+<button class="tab-btn active" data-tab="chapters">Chapters</button>
+<button class="tab-btn" data-tab="keywords">Keywords</button>
+<button class="tab-btn" data-tab="account">Account</button>
+</div>
+<div class="tab-content active" id="chaptersTab">
+<ul class="chapter-list" id="chapterList"></ul>
+<button class="add-btn" id="addChapterBtn">+ New Chapter</button>
+<button class="add-btn" id="importBtn" style="margin-top:8px;">Import File</button>
+<input type="file" id="importFileInput" accept=".md,.txt,.html,.markdown" style="display:none;">
+</div>
+<div class="tab-content" id="keywordsTab">
+<div class="keyword-input-group">
+<input type="text" id="newKeywordInput" placeholder="Add character/item...">
+<input type="text" id="newKeywordNotes" placeholder="Lore notes...">
+<button id="addKeywordBtn" class="add-btn primary-btn">+ Add Keyword</button>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:12px;">
+<button id="nameGenBtn" class="add-btn" style="flex:1;font-size:0.85rem;padding:8px;">Suggest a Name</button>
+</div>
+<div class="keyword-stats-title">Active Keywords</div>
+<ul class="keyword-list" id="keywordList"></ul>
+</div>
+<div class="tab-content" id="accountTab">
+<div id="authForm">
+<h3 style="font-family:'Merriweather',serif;color:var(--accent-orange);margin-bottom:10px;">Login / Sign Up</h3>
+<input type="email" id="authEmail" class="custom-input" placeholder="Email" style="margin-bottom:0;">
+<input type="password" id="authPass" class="custom-input" placeholder="Password" style="margin-bottom:0;">
+<button id="signupBtn" class="add-btn primary-btn">Sign Up</button>
+<button id="loginBtn" class="add-btn">Log In</button>
+</div>
+<div id="authDetails" style="display:none;flex-direction:column;flex-grow:1;">
+<div class="auth-info-box"><div class="auth-info-label">Signed in as</div><div id="userEmail" class="auth-info-email"></div></div>
+<p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:20px;">Your work is automatically synced to the cloud while logged in.</p>
+<button id="logoutBtn" class="add-btn">Log Out</button>
+</div>
+</div>
+</aside>
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+<main class="canvas-container" id="canvasContainer">
+<div id="findPanel" class="find-panel">
+<input type="text" id="findInput" placeholder="Find in page...">
+<span id="findCounter" class="find-counter">0 of 0</span>
+<button class="icon-btn" id="findPrevBtn" title="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg></button>
+<button class="icon-btn" id="findNextBtn" title="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+<button class="icon-btn" id="globalSearchBtn" title="Search All Books"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></button>
+<button class="icon-btn" id="findCloseBtn" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+</div>
+<div class="editor-toolbar" id="editorToolbar">
+<button class="tool-btn" id="boldBtn" title="Bold" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg></button>
+<button class="tool-btn" id="italicBtn" title="Italic" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg></button>
+<div class="tool-divider"></div>
+<select id="fontSizeSelect" class="tool-select" title="Text Size"><option value="3">Normal</option><option value="1">Small</option><option value="5">Large</option><option value="6">Huge</option></select>
+<div class="color-popover-wrap">
+<button class="tool-btn" id="colorToggleBtn" title="Text Color" onmousedown="event.preventDefault()" ontouchstart="event.preventDefault()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg></button>
+<div id="colorPalette" class="color-palette hidden"></div>
+</div>
+</div>
+<div class="pages-wrapper" id="pagesWrapper"></div>
+</main>
+</div>
+<div id="lorePopover" class="lore-popover"><button id="lorePopoverClose" class="lore-popover-close" aria-label="Close">&times;</button><div id="lorePopoverText"></div></div>
+<div id="importProgress" class="import-progress">Importing...</div>
+<div id="installBanner" class="install-banner"><span>Install BookSpritz for offline use</span><button id="installBtn">Install</button><button id="installClose" class="install-close" aria-label="Dismiss">&times;</button></div>
+<div id="postItFab" class="fab" title="Add Margin Note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3v5h5"/><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11z"/></svg></div>
+<div id="historyModal" class="modal hidden"><div class="modal-content"><h2>Time Machine</h2><p>Snapshots captured every 10 minutes. Click "Snapshot Now" to save a labeled checkpoint.</p>
+<div style="margin-bottom:16px;display:flex;gap:8px;">
+<button id="snapshotNowBtn" class="add-btn primary-btn" style="flex:1;">Snapshot Now</button>
+<button id="clearHistoryBtn" class="add-btn" style="flex:0 0 auto;">Clear All</button>
+</div>
+<ul id="historyList" class="history-list"></ul>
+<div class="modal-actions"><button id="closeHistoryBtn" class="add-btn">Close</button></div>
+</div></div>
+<div id="reviewModal" class="modal hidden"><div class="modal-content"><h2 id="reviewModalTitle">Review Action</h2><p>Select the instances where you want to apply the action. Uncheck any you wish to keep as-is.</p><ul id="reviewList" class="history-list"></ul><div class="modal-actions"><button id="closeReviewBtn" class="add-btn">Cancel</button><button id="applyReviewBtn" class="add-btn primary-btn">Apply Selected</button></div></div></div>
+<div id="statsModal" class="modal hidden"><div class="modal-content"><h2>Word Count & Stats</h2><p id="statsBookName" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;"></p><div id="statsContent"></div><div class="modal-actions"><button id="closeStatsBtn" class="add-btn">Close</button></div></div></div>
+<div id="nameGenModal" class="modal hidden"><div class="modal-content"><h2>Name Generator</h2><p>Need inspiration for a character name? Pick an origin and generate.</p>
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+<select id="nameOriginSelect" class="settings-select" style="font-size:16px;">
+<option value="any">Any origin</option>
+<option value="english">English</option>
+<option value="french">French</option>
+<option value="german">German</option>
+<option value="italian">Italian</option>
+<option value="spanish">Spanish</option>
+<option value="nordic">Nordic</option>
+<option value="slavic">Slavic</option>
+<option value="arabic">Arabic</option>
+<option value="japanese">Japanese</option>
+<option value="fantasy">Fantasy</option>
+</select>
+<label style="font-size:0.85rem;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="nameGenderMale" checked> Male</label>
+<label style="font-size:0.85rem;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="nameGenderFemale" checked> Female</label>
+<button id="genNameBtn" class="add-btn primary-btn">Generate</button>
+</div>
+<div id="nameGenResults" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:60px;"></div>
+<div class="modal-actions"><button id="closeNameGenBtn" class="add-btn">Close</button></div>
+</div></div>
+<div id="globalSearchModal" class="modal hidden"><div class="modal-content"><h2>Search All Books</h2><p>Finds text across every chapter in every book.</p>
+<div style="display:flex;gap:8px;margin-bottom:16px;"><input type="text" id="globalSearchInput" class="custom-input" placeholder="Search query..." style="margin-bottom:0;flex:1;font-size:16px;"><button id="runGlobalSearchBtn" class="add-btn primary-btn">Search</button></div>
+<div id="globalSearchResults" style="overflow-y:auto;flex-grow:1;"></div>
+<div class="modal-actions"><button id="closeGlobalSearchBtn" class="add-btn">Close</button></div>
+</div></div>
+<div id="settingsModal" class="modal hidden"><div class="modal-content"><h2>Settings</h2><p>Customize your writing environment. Changes save automatically.</p>
+<div class="settings-section">
+<label class="settings-label">Font Family
+<select id="settingFontFamily" class="settings-select">
+<option value="Merriweather, serif">Merriweather (serif, default)</option>
+<option value="Georgia, 'Times New Roman', serif">Georgia (serif)</option>
+<option value="'LXGW WenKai', serif">LXGW WenKai (handwriting)</option>
+<option value="'Nunito', sans-serif">Nunito (sans-serif)</option>
+<option value="'Courier New', monospace">Courier New (mono)</option>
+<option value="system-ui, sans-serif">System default</option>
+</select>
+</label>
+<label class="settings-label">Font Size: <span id="fontSizeVal">1.1rem</span>
+<input type="range" id="settingFontSize" min="0.85" max="1.6" step="0.05" value="1.1" class="settings-range">
+</label>
+<label class="settings-label">Line Height: <span id="lineHeightVal">1.8</span>
+<input type="range" id="settingLineHeight" min="1.3" max="2.4" step="0.1" value="1.8" class="settings-range">
+</label>
+<label class="settings-label">Page Width: <span id="pageWidthVal">700px</span>
+<input type="range" id="settingPageWidth" min="500" max="1000" step="50" value="700" class="settings-range">
+</label>
+<label class="settings-label">Page Height: <span id="pageHeightVal">800px</span>
+<input type="range" id="settingPageHeight" min="500" max="1200" step="50" value="800" class="settings-range">
+</label>
+<label class="settings-label">Auto-save interval: <span id="autosaveVal">2s</span>
+<input type="range" id="settingAutosave" min="500" max="10000" step="500" value="2000" class="settings-range">
+</label>
+</div>
+<div class="settings-actions">
+<button id="resetSettingsBtn" class="add-btn">Reset to Defaults</button>
+<button id="closeSettingsBtn" class="add-btn primary-btn">Done</button>
+</div>
+</div></div>
+<div id="exportModal" class="modal hidden"><div class="modal-content"><h2>Export Your Book</h2><p>Exports the current book. Choose a format — all free, runs in your browser.</p><div class="export-grid"><button class="export-btn" data-format="markdown"><strong>Markdown</strong><span>.md — universal plain text</span></button><button class="export-btn" data-format="txt"><strong>Plain Text</strong><span>.txt — no formatting</span></button><button class="export-btn" data-format="html"><strong>HTML</strong><span>.html — open in any browser</span></button><button class="export-btn" data-format="print"><strong>PDF (Print)</strong><span>opens print dialog → Save as PDF</span></button></div><div class="modal-actions"><button id="closeExportBtn" class="add-btn">Close</button></div></div></div>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="js/core.js"></script>
+<script src="js/saveindicator.js"></script>
+<script src="js/books.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/lore.js"></script>
+<script src="js/history.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/export-import.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/mobile.js"></script>
+<script src="js/app.js"></script>
+<script src="js/focus.js"></script>
+<script src="js/search.js"></script>
+<script src="js/namegen.js"></script>
+<script src="js/analyzer.js"></script>
+</body>
+</html>

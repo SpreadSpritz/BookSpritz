@@ -96,6 +96,20 @@ auth.onAuthStateChanged(user => {
 
 
 
-            try { migrateToMultiBook(); if (!appData.activeBookId && appData.books[0]) appData.activeBookId = appData.books[0].id; setupEventListeners(); LoreSystem.init(); startAutoVersioning(); setupSettingsListeners(); applySettings(); lastWordCount = computeStats().totals.words; updateDailyBadge(); } catch(err) { console.error('Init failed:', err); CustomUI.alert('Failed to initialize BookSpritz: ' + err.message); }
-
-}); // end DOMContentLoaded
+// Init — wrapped in DOMContentLoaded to ensure all scripts + DOM are ready
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        migrateToMultiBook();
+        if (!appData.activeBookId && appData.books[0]) appData.activeBookId = appData.books[0].id;
+        setupEventListeners();
+        LoreSystem.init();
+        startAutoVersioning();
+        setupSettingsListeners();
+        applySettings();
+        lastWordCount = computeStats().totals.words;
+        updateDailyBadge();
+    } catch(err) {
+        console.error('Init failed:', err);
+        CustomUI.alert('Failed to initialize BookSpritz: ' + err.message);
+    }
+});

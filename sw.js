@@ -2,7 +2,7 @@
 // Strategy: cache-first for the app shell (HTML, CSS, JS, icons, fonts),
 // network-first for Firebase (so auth/sync always uses fresh data when online).
 
-const CACHE_VERSION = 'bookspritz-v2';
+const CACHE_VERSION = 'bookspritz-v3';
 const APP_SHELL = [
   './',
   './index.html',
