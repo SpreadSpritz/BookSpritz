@@ -2,154 +2,51 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>BookSpritz</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-:root{--app-height:100vh;--bg-color:#FDFBF7;--page-bg:#FFF;--text-color:#4A4A4A;--text-muted:#8A8A8A;--accent-yellow:#F0E6B1;--accent-orange:#D9946B;--accent-hover:#C58456;--panel-bg:#F5F1E8;--border-color:#E2DCCF;--shadow-color:rgba(0,0,0,0.08);--header-height:60px;--sidebar-width:280px;--transition-speed:0.3s}
-body.zen-mode{--bg-color:#000;--page-bg:#111;--text-color:#C0C0C0;--text-muted:#808080;--accent-yellow:#333;--accent-orange:#4A4A4A;--accent-hover:#5A5A5A;--panel-bg:#0A0A0A;--border-color:#222;--shadow-color:rgba(0,0,0,0.5)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Nunito',sans-serif;background-color:var(--bg-color);color:var(--text-color);transition:background-color var(--transition-speed),color var(--transition-speed);overflow:hidden;height:100vh;height:var(--app-height)}
-.app-header{height:var(--header-height);background-color:var(--panel-bg);border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;padding:0 20px;z-index:100;position:relative;flex-shrink:0}
-.header-left,.header-right{display:flex;align-items:center;gap:15px}
-.app-title{font-family:'Merriweather',serif;font-weight:700;font-size:1.2rem;color:var(--accent-orange)}
-.icon-btn{background:none;border:none;color:var(--text-color);cursor:pointer;padding:8px;border-radius:6px;display:flex;align-items:center;justify-content:center;transition:background-color 0.2s,color 0.2s}
-.icon-btn:hover{background-color:var(--accent-yellow)}
-.icon-btn svg{width:22px;height:22px}
-.icon-btn.active{background-color:var(--accent-orange);color:#fff}
-.workspace{display:flex;height:calc(var(--app-height) - var(--header-height));position:relative;overflow:hidden}
-.sidebar{background-color:var(--panel-bg);padding:20px;display:flex;flex-direction:column;transition:width var(--transition-speed) ease,padding var(--transition-speed) ease,border-color var(--transition-speed);overflow:hidden;flex-shrink:0;width:var(--sidebar-width);border-right:1px solid var(--border-color)}
-.sidebar.collapsed{width:0!important;padding:0;border:none}
-.canvas-container{flex-grow:1;overflow-y:auto;padding:40px 20px;display:flex;flex-direction:column;align-items:center;scroll-behavior:smooth;position:relative}
-.pages-wrapper{width:100%;max-width:700px;display:flex;flex-direction:column;gap:40px}
-.page{background-color:var(--page-bg);width:100%;height:800px;max-height:800px;padding:60px 70px;box-shadow:0 5px 15px var(--shadow-color);border-radius:4px;font-family:'Merriweather',serif;font-size:1.1rem;line-height:1.8;color:var(--text-color);outline:none;position:relative;overflow:hidden;box-sizing:border-box}
-.page-title{font-size:1.8rem;margin-bottom:30px;color:var(--accent-orange);font-weight:700}
-.compiled-view{width:100%;max-width:800px;background:var(--page-bg);padding:60px;box-shadow:0 5px 15px var(--shadow-color);border-radius:4px;box-sizing:border-box}
-.compiled-view h2{font-family:'Merriweather',serif;color:var(--accent-orange);margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid var(--border-color)}
-.compiled-view .compiled-content{margin-bottom:60px;line-height:1.8;font-family:'Merriweather',serif;font-size:1.1rem}
-.find-panel{position:sticky;top:0;left:0;right:0;background:var(--panel-bg);padding:10px 20px;border-bottom:1px solid var(--border-color);display:flex;gap:10px;align-items:center;z-index:15;box-shadow:0 2px 8px var(--shadow-color);transform:translateY(-150%);transition:transform 0.3s ease}
-.find-panel.active{transform:translateY(0)}
-.find-panel input{flex-grow:1;padding:8px;border:1px solid var(--border-color);border-radius:4px;background:var(--bg-color);color:var(--text-color)}
-.find-counter{font-size:0.85rem;color:var(--text-muted);font-weight:600;white-space:nowrap}
-.editor-toolbar{display:flex;align-items:center;gap:8px;padding:8px 12px;background-color:var(--panel-bg);border-radius:8px;margin-bottom:20px;box-shadow:0 2px 8px var(--shadow-color);max-width:700px;width:100%;z-index:10;border:1px solid var(--border-color);flex-shrink:0;flex-wrap:wrap}
-.tool-btn{background:none;border:1px solid transparent;color:var(--text-color);cursor:pointer;padding:6px;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
-.tool-btn:hover{background-color:var(--accent-yellow);border-color:var(--border-color)}
-.tool-btn.active{background-color:var(--accent-yellow);color:var(--accent-orange);border-color:var(--border-color)}
-.tool-btn svg{width:20px;height:20px}
-.tool-divider{width:1px;height:24px;background-color:var(--border-color);margin:0 4px}
-.tool-select{padding:6px 8px;background-color:var(--bg-color);border:1px solid var(--border-color);border-radius:4px;color:var(--text-color);cursor:pointer;font-size:0.9rem}
-.color-popover-wrap{position:relative}
-.color-palette{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:10px;background:var(--page-bg);border:1px solid var(--border-color);border-radius:8px;box-shadow:0 4px 12px var(--shadow-color);position:absolute;top:45px;left:0;z-index:200;width:180px}
-.color-palette.hidden{display:none}
-.preset-color{width:24px;height:24px;border-radius:4px;border:1px solid rgba(0,0,0,0.1);cursor:pointer;padding:0}
-.preset-color:hover{transform:scale(1.1)}
-.popover-actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px;grid-column:1/-1}
-.popover-actions select{font-size:0.8rem;padding:2px}
-.confirm-color-btn{background:var(--accent-orange);color:#fff;border:none;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:0.8rem;font-weight:600}
-.fab{position:fixed;bottom:25px;right:25px;width:50px;height:50px;background-color:var(--accent-orange);color:#fff;border-radius:50%;box-shadow:0 4px 12px var(--shadow-color);display:flex;align-items:center;justify-content:center;cursor:grab;z-index:90;transition:transform 0.2s;user-select:none;touch-action:none}
-.fab:hover{background-color:var(--accent-hover);transform:scale(1.05)}
-.fab svg{width:24px;height:24px;pointer-events:none}
-.sidebar-tabs{display:flex;margin-bottom:25px;background:var(--bg-color);border-radius:10px;padding:5px;gap:5px;flex-shrink:0;border:1px solid var(--border-color)}
-.tab-btn{flex:1;padding:10px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-weight:700;border-radius:8px;transition:all 0.2s;font-size:0.85rem}
-.tab-btn:hover{color:var(--accent-orange)}
-.tab-btn.active{color:var(--accent-orange);background:var(--panel-bg);box-shadow:0 1px 3px rgba(0,0,0,0.05)}
-.tab-content{display:none;flex-direction:column;flex-grow:1;min-height:0}
-.tab-content.active{display:flex}
-.chapter-list,.keyword-list{list-style:none;overflow-y:auto;flex-grow:1;padding-right:5px;margin-top:5px}
-.chapter-item,.keyword-item{display:flex;flex-direction:column;gap:10px;background:var(--bg-color);border:1px solid var(--border-color);padding:15px;border-radius:10px;margin-bottom:12px;transition:border-color 0.2s;box-sizing:border-box;width:100%}
-.chapter-item{flex-direction:row;align-items:center;justify-content:space-between}
-.chapter-item:hover,.keyword-item:hover{border-color:var(--accent-orange)}
-.chapter-title-text{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-grow:1;margin-right:8px;font-weight:600}
-.chapter-item.active{background-color:var(--accent-orange);color:#fff}
-.chapter-actions,.keyword-actions-bar{display:flex;gap:8px;align-items:center;flex-shrink:0}
-.chapter-icon-btn,.keyword-icon-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px;display:flex;align-items:center;border-radius:4px;transition:all 0.2s}
-.chapter-icon-btn:hover,.keyword-icon-btn:hover{color:var(--accent-orange);background:var(--accent-yellow)}
-.chapter-item.active .chapter-icon-btn{color:#fff}
-.chapter-icon-btn svg,.keyword-icon-btn svg{width:16px;height:16px}
-.add-btn{margin-top:15px;padding:12px;background:none;border:2px dashed var(--border-color);color:var(--text-muted);border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.2s;flex-shrink:0;width:100%}
-.add-btn:hover{border-color:var(--accent-orange);color:var(--accent-orange)}
-.add-btn.primary-btn{background:var(--accent-orange);color:#fff;border-color:var(--accent-orange)}
-.add-btn.primary-btn:hover{background:var(--accent-hover)}
-.keyword-input-group{display:flex;flex-direction:column;gap:12px;margin-bottom:25px;flex-shrink:0;background:var(--bg-color);padding:18px;border-radius:10px;border:1px solid var(--border-color)}
-.keyword-input-group input{padding:12px;border:1px solid var(--border-color);border-radius:6px;background-color:var(--bg-color);color:var(--text-color);font-size:0.95rem;width:100%;box-sizing:border-box}
-.keyword-stats-title{font-size:0.85rem;text-transform:uppercase;color:var(--text-muted);letter-spacing:1px;margin-bottom:12px;padding-left:5px;font-weight:700}
-.keyword-main{display:flex;justify-content:space-between;align-items:center;width:100%}
-.keyword-name{font-weight:700;color:var(--accent-orange);font-size:1rem}
-.keyword-notes{font-size:0.85rem;color:var(--text-muted);font-style:italic;background:var(--panel-bg);padding:10px;border-radius:6px;border-left:3px solid var(--accent-yellow);width:100%;box-sizing:border-box}
-.keyword-actions-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%;box-sizing:border-box}
-.keyword-action-btn{background:var(--bg-color);border:1px solid var(--border-color);color:var(--text-color);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:0.8rem;font-weight:600;flex-shrink:1}
-.keyword-action-btn:hover{background:var(--accent-yellow);border-color:var(--accent-orange);color:var(--accent-orange)}
-.keyword-action-btn.active{background:var(--accent-orange);color:#fff;border-color:var(--accent-orange)}
-.keyword-stat{font-size:0.75rem;background-color:var(--accent-yellow);padding:4px 10px;border-radius:12px;color:#5A5A5A;font-weight:700;margin-left:auto;flex-shrink:0}
-.keyword-format-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding-top:10px;border-top:1px solid var(--border-color);margin-top:4px;width:100%;box-sizing:border-box}
-.fmt-btn{width:32px;height:32px;border:1px solid var(--border-color);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:0.85rem;font-weight:700;background:var(--bg-color);color:var(--text-muted);flex-shrink:0}
-.fmt-btn:hover{border-color:var(--accent-orange);color:var(--accent-orange)}
-.fmt-btn.active{background:var(--accent-yellow);color:var(--accent-orange);border-color:var(--accent-orange)}
-.fmt-color{width:32px;height:32px;border:1px solid var(--border-color);border-radius:6px;background:none;cursor:pointer;padding:0;flex-shrink:0}
-.canvas-flag{position:absolute;width:30px;height:40px;z-index:10;cursor:grab;touch-action:none;display:flex;align-items:center;justify-content:center;user-select:none}
-.canvas-flag:active{cursor:grabbing;z-index:100}
-.flag-body{width:100%;height:100%;background-color:var(--accent-yellow);clip-path:polygon(0% 0%,75% 0%,100% 50%,75% 100%,0% 100%);box-shadow:2px 2px 5px var(--shadow-color);transition:transform 0.2s;pointer-events:none}
-.canvas-flag.right .flag-body{clip-path:polygon(25% 0%,100% 0%,100% 100%,25% 100%,0% 50%)}
-.canvas-flag:hover .flag-body,.canvas-flag.expanded .flag-body{transform:scale(1.15)}
-.flag-popover{display:none;position:absolute;top:45px;left:5px;width:220px;background:var(--page-bg);border:1px solid var(--border-color);border-radius:6px;padding:10px;box-shadow:0 4px 12px var(--shadow-color);z-index:200}
-.canvas-flag.right .flag-popover{left:auto;right:5px}
-.canvas-flag:hover .flag-popover,.canvas-flag.expanded .flag-popover{display:block}
-.flag-text{width:100%;height:80px;border:1px solid var(--border-color);border-radius:4px;background:var(--bg-color);color:var(--text-color);font-size:0.9rem;padding:5px;resize:none;outline:none}
-.flag-colors{display:flex;gap:5px;margin-top:8px;justify-content:center}
-.flag-dot{width:15px;height:15px;border-radius:50%;cursor:pointer;border:1px solid rgba(0,0,0,0.1)}
-.flag-delete-btn{display:block;margin:8px auto 0;background:none;border:1px solid var(--border-color);color:var(--text-muted);padding:6px 8px;border-radius:4px;cursor:pointer;font-size:0.8rem;width:100%}
-.flag-delete-btn:hover{color:#fff;background:#e57373;border-color:#e57373}
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000}
-.modal.hidden{opacity:0;pointer-events:none}
-.modal-content{background-color:var(--page-bg);padding:30px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.2);width:90%;max-width:500px;display:flex;flex-direction:column;max-height:80vh}
-.modal-content h2{font-family:'Merriweather',serif;color:var(--accent-orange);margin-bottom:10px}
-.modal-content p{font-size:0.9rem;color:var(--text-muted);margin-bottom:20px}
-.history-list{list-style:none;overflow-y:auto;margin-bottom:20px;border:1px solid var(--border-color);border-radius:6px;flex-grow:1;background:var(--bg-color)}
-.history-item{padding:12px 15px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center}
-.history-item:last-child{border-bottom:none}
-.history-item button{background-color:var(--accent-orange);color:#fff;border:none;padding:5px 10px;border-radius:4px;cursor:pointer;font-size:0.85rem}
-.history-item button:hover{background-color:var(--accent-hover)}
-.modal-actions{display:flex;justify-content:flex-end;gap:10px}
-.modal-actions .add-btn{width:auto;margin-top:0;padding:8px 16px}
-.review-item{flex-direction:column;align-items:flex-start}
-.review-label{display:flex;gap:10px;cursor:pointer;width:100%}
-.review-checkbox{margin-top:4px;width:16px;height:16px;accent-color:var(--accent-orange);flex-shrink:0}
-.review-text{font-size:0.95rem;line-height:1.5;color:var(--text-color)}
-.review-text strong{color:var(--accent-orange)}
-.custom-input{width:100%;padding:10px;border:1px solid var(--border-color);border-radius:4px;background:var(--bg-color);color:var(--text-color);font-size:1rem;margin-bottom:20px;box-sizing:border-box}
-#authForm{display:flex;flex-direction:column;gap:12px;margin-top:20px}
-#authForm .custom-input{margin-bottom:0}
-.auth-info-box{background:var(--bg-color);border:1px solid var(--border-color);padding:15px;border-radius:8px;margin-bottom:20px}
-.auth-info-label{font-size:0.85rem;text-transform:uppercase;color:var(--text-muted);letter-spacing:1px;margin-bottom:5px}
-.auth-info-email{font-weight:700;color:var(--accent-orange);word-break:break-all;font-size:1rem}
-span.keyword-span{background-color:#E8D4C8;color:var(--text-color);border-radius:3px;padding:0 2px;cursor:help;position:relative;border:1px solid transparent}
-span.keyword-span:hover{border:1px solid var(--accent-orange)}
-span.keyword-span:hover::after{content:attr(data-notes);position:absolute;top:100%;left:50%;transform:translateX(-50%);background-color:#333;color:#fff;padding:8px 12px;border-radius:6px;white-space:pre-wrap;width:200px;z-index:1000;margin-top:5px;box-shadow:0 4px 12px rgba(0,0,0,0.2);font-family:'Nunito',sans-serif;font-size:0.85rem;font-style:normal;text-align:center}
-mark.find-match{background-color:var(--accent-yellow);color:var(--text-color);border-radius:2px;padding:0 2px}
-mark.find-active{background-color:var(--accent-orange);color:#fff}
-.baked-keyword{border-bottom:2px dotted var(--accent-orange)}
-::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border-color);border-radius:3px}
-@media (max-width:768px){.sidebar{position:absolute;top:0;bottom:0;z-index:50;box-shadow:5px 0 15px rgba(0,0,0,0.1);left:0}.sidebar.collapsed{width:var(--sidebar-width)!important;padding:20px;transform:translateX(-100%);border:none}.page{padding:30px 25px;font-size:1rem}.fab{bottom:20px;right:20px}.color-palette{width:160px}.find-panel{flex-wrap:wrap}}
-</style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#D9946B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BookSpritz">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="app-header">
 <div class="header-left">
 <button id="sidebarToggle" class="icon-btn" title="Toggle Chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
 <h1 class="app-title">BookSpritz</h1>
+<span id="saveIndicator" class="save-indicator" title="Auto-save status">Saved</span>
 </div>
 <div class="header-right">
+<button id="settingsToggle" class="icon-btn" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+<button id="statsToggle" class="icon-btn" title="Word Count & Stats" style="position:relative;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg><span id="dailyBadge" class="daily-badge" title="Today's progress"></span></button>
+<button id="exportToggle" class="icon-btn" title="Export Book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+<button id="spellcheckToggle" class="icon-btn active" title="Toggle Spellcheck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/><circle cx="12" cy="12" r="10"/></svg></button>
 <button id="findToggle" class="icon-btn" title="Find (Ctrl+F)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
 <button id="historyToggle" class="icon-btn" title="Time Machine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></button>
 <button id="fullscreenToggle" class="icon-btn" title="Full Screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
 <button id="readonlyToggle" class="icon-btn" title="Read-Only Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+<button id="focusToggle" class="icon-btn" title="Focus Mode (dim other paragraphs)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" opacity="0.4"/></svg></button>
 <button id="zenToggle" class="icon-btn" title="Zen Mode"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
 </div>
 </header>
 <div class="workspace">
 <aside class="sidebar" id="sidebar">
+<div class="book-switcher">
+<div class="book-switcher-row">
+<select id="bookSelect" class="book-select" title="Switch book"></select>
+<button id="newBookBtn" class="book-action-btn" title="New Book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+<button id="renameBookBtn" class="book-action-btn" title="Rename Book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+<button id="deleteBookBtn" class="book-action-btn" title="Delete Book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+</div>
+</div>
 <div class="sidebar-tabs">
 <button class="tab-btn active" data-tab="chapters">Chapters</button>
 <button class="tab-btn" data-tab="keywords">Keywords</button>
@@ -158,12 +55,17 @@ mark.find-active{background-color:var(--accent-orange);color:#fff}
 <div class="tab-content active" id="chaptersTab">
 <ul class="chapter-list" id="chapterList"></ul>
 <button class="add-btn" id="addChapterBtn">+ New Chapter</button>
+<button class="add-btn" id="importBtn" style="margin-top:8px;">Import File</button>
+<input type="file" id="importFileInput" accept=".md,.txt,.html,.markdown" style="display:none;">
 </div>
 <div class="tab-content" id="keywordsTab">
 <div class="keyword-input-group">
 <input type="text" id="newKeywordInput" placeholder="Add character/item...">
 <input type="text" id="newKeywordNotes" placeholder="Lore notes...">
 <button id="addKeywordBtn" class="add-btn primary-btn">+ Add Keyword</button>
+</div>
+<div style="display:flex;gap:8px;margin-bottom:12px;">
+<button id="nameGenBtn" class="add-btn" style="flex:1;font-size:0.85rem;padding:8px;">Suggest a Name</button>
 </div>
 <div class="keyword-stats-title">Active Keywords</div>
 <ul class="keyword-list" id="keywordList"></ul>
@@ -183,12 +85,14 @@ mark.find-active{background-color:var(--accent-orange);color:#fff}
 </div>
 </div>
 </aside>
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
 <main class="canvas-container" id="canvasContainer">
 <div id="findPanel" class="find-panel">
 <input type="text" id="findInput" placeholder="Find in page...">
 <span id="findCounter" class="find-counter">0 of 0</span>
 <button class="icon-btn" id="findPrevBtn" title="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg></button>
 <button class="icon-btn" id="findNextBtn" title="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+<button class="icon-btn" id="globalSearchBtn" title="Search All Books"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></button>
 <button class="icon-btn" id="findCloseBtn" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 </div>
 <div class="editor-toolbar" id="editorToolbar">
@@ -204,299 +108,98 @@ mark.find-active{background-color:var(--accent-orange);color:#fff}
 <div class="pages-wrapper" id="pagesWrapper"></div>
 </main>
 </div>
+<div id="lorePopover" class="lore-popover"><button id="lorePopoverClose" class="lore-popover-close" aria-label="Close">&times;</button><div id="lorePopoverText"></div></div>
+<div id="importProgress" class="import-progress">Importing...</div>
+<div id="installBanner" class="install-banner"><span>Install BookSpritz for offline use</span><button id="installBtn">Install</button><button id="installClose" class="install-close" aria-label="Dismiss">&times;</button></div>
 <div id="postItFab" class="fab" title="Add Margin Note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3v5h5"/><path d="M21 8v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11z"/></svg></div>
-<div id="historyModal" class="modal hidden"><div class="modal-content"><h2>Time Machine</h2><p>Revert to a previous auto-save (Captured every 10 mins).</p><ul id="historyList" class="history-list"></ul><div class="modal-actions"><button id="closeHistoryBtn" class="add-btn">Close</button></div></div></div>
+<div id="historyModal" class="modal hidden"><div class="modal-content"><h2>Time Machine</h2><p>Snapshots captured every 10 minutes. Click "Snapshot Now" to save a labeled checkpoint.</p>
+<div style="margin-bottom:16px;display:flex;gap:8px;">
+<button id="snapshotNowBtn" class="add-btn primary-btn" style="flex:1;">Snapshot Now</button>
+<button id="clearHistoryBtn" class="add-btn" style="flex:0 0 auto;">Clear All</button>
+</div>
+<ul id="historyList" class="history-list"></ul>
+<div class="modal-actions"><button id="closeHistoryBtn" class="add-btn">Close</button></div>
+</div></div>
 <div id="reviewModal" class="modal hidden"><div class="modal-content"><h2 id="reviewModalTitle">Review Action</h2><p>Select the instances where you want to apply the action. Uncheck any you wish to keep as-is.</p><ul id="reviewList" class="history-list"></ul><div class="modal-actions"><button id="closeReviewBtn" class="add-btn">Cancel</button><button id="applyReviewBtn" class="add-btn primary-btn">Apply Selected</button></div></div></div>
+<div id="statsModal" class="modal hidden"><div class="modal-content"><h2>Word Count & Stats</h2><p id="statsBookName" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:12px;"></p><div id="statsContent"></div><div class="modal-actions"><button id="closeStatsBtn" class="add-btn">Close</button></div></div></div>
+<div id="nameGenModal" class="modal hidden"><div class="modal-content"><h2>Name Generator</h2><p>Need inspiration for a character name? Pick an origin and generate.</p>
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+<select id="nameOriginSelect" class="settings-select" style="font-size:16px;">
+<option value="any">Any origin</option>
+<option value="english">English</option>
+<option value="french">French</option>
+<option value="german">German</option>
+<option value="italian">Italian</option>
+<option value="spanish">Spanish</option>
+<option value="nordic">Nordic</option>
+<option value="slavic">Slavic</option>
+<option value="arabic">Arabic</option>
+<option value="japanese">Japanese</option>
+<option value="fantasy">Fantasy</option>
+</select>
+<label style="font-size:0.85rem;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="nameGenderMale" checked> Male</label>
+<label style="font-size:0.85rem;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="nameGenderFemale" checked> Female</label>
+<button id="genNameBtn" class="add-btn primary-btn">Generate</button>
+</div>
+<div id="nameGenResults" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:60px;"></div>
+<div class="modal-actions"><button id="closeNameGenBtn" class="add-btn">Close</button></div>
+</div></div>
+<div id="globalSearchModal" class="modal hidden"><div class="modal-content"><h2>Search All Books</h2><p>Finds text across every chapter in every book.</p>
+<div style="display:flex;gap:8px;margin-bottom:16px;"><input type="text" id="globalSearchInput" class="custom-input" placeholder="Search query..." style="margin-bottom:0;flex:1;font-size:16px;"><button id="runGlobalSearchBtn" class="add-btn primary-btn">Search</button></div>
+<div id="globalSearchResults" style="overflow-y:auto;flex-grow:1;"></div>
+<div class="modal-actions"><button id="closeGlobalSearchBtn" class="add-btn">Close</button></div>
+</div></div>
+<div id="settingsModal" class="modal hidden"><div class="modal-content"><h2>Settings</h2><p>Customize your writing environment. Changes save automatically.</p>
+<div class="settings-section">
+<label class="settings-label">Font Family
+<select id="settingFontFamily" class="settings-select">
+<option value="Merriweather, serif">Merriweather (serif, default)</option>
+<option value="Georgia, 'Times New Roman', serif">Georgia (serif)</option>
+<option value="'LXGW WenKai', serif">LXGW WenKai (handwriting)</option>
+<option value="'Nunito', sans-serif">Nunito (sans-serif)</option>
+<option value="'Courier New', monospace">Courier New (mono)</option>
+<option value="system-ui, sans-serif">System default</option>
+</select>
+</label>
+<label class="settings-label">Font Size: <span id="fontSizeVal">1.1rem</span>
+<input type="range" id="settingFontSize" min="0.85" max="1.6" step="0.05" value="1.1" class="settings-range">
+</label>
+<label class="settings-label">Line Height: <span id="lineHeightVal">1.8</span>
+<input type="range" id="settingLineHeight" min="1.3" max="2.4" step="0.1" value="1.8" class="settings-range">
+</label>
+<label class="settings-label">Page Width: <span id="pageWidthVal">700px</span>
+<input type="range" id="settingPageWidth" min="500" max="1000" step="50" value="700" class="settings-range">
+</label>
+<label class="settings-label">Page Height: <span id="pageHeightVal">800px</span>
+<input type="range" id="settingPageHeight" min="500" max="1200" step="50" value="800" class="settings-range">
+</label>
+<label class="settings-label">Auto-save interval: <span id="autosaveVal">2s</span>
+<input type="range" id="settingAutosave" min="500" max="10000" step="500" value="2000" class="settings-range">
+</label>
+</div>
+<div class="settings-actions">
+<button id="resetSettingsBtn" class="add-btn">Reset to Defaults</button>
+<button id="closeSettingsBtn" class="add-btn primary-btn">Done</button>
+</div>
+</div></div>
+<div id="exportModal" class="modal hidden"><div class="modal-content"><h2>Export Your Book</h2><p>Exports the current book. Choose a format — all free, runs in your browser.</p><div class="export-grid"><button class="export-btn" data-format="markdown"><strong>Markdown</strong><span>.md — universal plain text</span></button><button class="export-btn" data-format="txt"><strong>Plain Text</strong><span>.txt — no formatting</span></button><button class="export-btn" data-format="html"><strong>HTML</strong><span>.html — open in any browser</span></button><button class="export-btn" data-format="print"><strong>PDF (Print)</strong><span>opens print dialog → Save as PDF</span></button></div><div class="modal-actions"><button id="closeExportBtn" class="add-btn">Close</button></div></div></div>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-const $ = id => document.getElementById(id);
-const firebaseConfig={apiKey:"AIzaSyBt3A8YQaYE1fMdXwlh7AvPu0w_7F8f-e4",authDomain:"spreadapoteck.firebaseapp.com",databaseURL:"https://spreadapoteck-default-rtdb.europe-west1.firebasedatabase.app",projectId:"spreadapoteck",storageBucket:"spreadapoteck.firebasestorage.app",messagingSenderId:"1060961337221",appId:"1:1060961337221:web:78c2a19fe6197a29e8ceec",measurementId:"G-39VC7GKE4N"};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(), db=firebase.database();
-const DB_KEY='bookSpritzData', HISTORY_KEY='bookSpritzHistory';
-let appData={chapters:[],keywords:{},colorPresets:['#000000','#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#FFA500','#800080','#FFC0CB','#008080']};
-let activeChapterId=null, saveTimeout=null, savedToolbarRange=null, currentUser=null, findMatches=[], findIndex=-1, reviewCallback=null, highlightTimeout=null;
-const POST_IT_COLORS=['#F0E6B1','#D9946B','#C9D6D3','#E8D4C8','#D4C5E2'];
-const chapterList=$('chapterList'), canvasContainer=$('canvasContainer'), pagesWrapper=$('pagesWrapper'), findPanel=$('findPanel'), findInput=$('findInput'), findCounter=$('findCounter');
-document.execCommand("defaultParagraphSeparator", false, "p");
-
-const CustomUI = {
-    modalContainer: null, init() { this.modalContainer = document.createElement('div'); this.modalContainer.className = 'modal hidden'; this.modalContainer.id = 'customModal'; this.modalContainer.innerHTML = `<div class="modal-content"><h2 id="customModalTitle"></h2><p id="customModalMsg" style="margin-bottom:15px;"></p><input type="text" id="customModalInput" class="custom-input" style="display:none;"><div class="modal-actions"><button id="customModalCancel" class="add-btn">Cancel</button><button id="customModalOk" class="add-btn primary-btn">OK</button></div></div>`; document.body.appendChild(this.modalContainer); },
-    show(title, msg, inputVal, hasCancel, callback) { $('customModalTitle').innerText = title; $('customModalMsg').innerText = msg; const input = $('customModalInput'), cancelBtn = $('customModalCancel'); if (inputVal !== undefined) { input.style.display = 'block'; input.value = inputVal; } else { input.style.display = 'none'; } cancelBtn.style.display = hasCancel ? 'block' : 'none'; this.modalContainer.classList.remove('hidden'); const okBtn = $('customModalOk'); const newOk = okBtn.cloneNode(true); okBtn.parentNode.replaceChild(newOk, okBtn); const newCancel = cancelBtn.cloneNode(true); cancelBtn.parentNode.replaceChild(newCancel, cancelBtn); newOk.onclick = () => { this.modalContainer.classList.add('hidden'); if (callback) callback(input.style.display === 'none' ? true : input.value); }; newCancel.onclick = () => { this.modalContainer.classList.add('hidden'); if (callback) callback(null); }; },
-    alert(msg, title="Alert") { this.show(title, msg, undefined, false, null); }, confirm(msg, callback, title="Confirm") { this.show(title, msg, undefined, true, res => callback(res)); }, prompt(msg, defaultText, callback, title="Input") { this.show(title, msg, defaultText, true, res => callback(res)); }
-}; CustomUI.init();
-
-function getCleanHTML(el) { const cl = el.cloneNode(true); cl.querySelectorAll('span.keyword-span,mark.find-match,mark.find-active').forEach(m => m.replaceWith(document.createTextNode(m.textContent))); cl.querySelectorAll('.canvas-flag').forEach(f => f.remove()); return cl.innerHTML; }
-
-function loadData() {
-    const sd = localStorage.getItem(DB_KEY);
-    if (sd) {
-        appData = JSON.parse(sd); if (!appData.colorPresets) appData.colorPresets = ['#000000','#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#FFA500','#800080','#FFC0CB','#008080'];
-        // Migration: Move global postIts to chapter scopes
-        if (appData.postIts && appData.postIts.length) {
-            appData.chapters.forEach(ch => {
-                ch.flags = appData.postIts.filter(f => f.pageId && ch.pages.some(p => p.id === f.pageId));
-            });
-            delete appData.postIts;
-        }
-        appData.chapters.forEach(ch => { if (ch.content && !ch.pages) { ch.pages = [{id:'pg_'+Date.now(), content:ch.content}]; delete ch.content; } if (!ch.pages) ch.pages = []; if (!ch.flags) ch.flags = []; });
-    } else {
-        const dId = 'ch_' + Date.now();
-        appData.chapters.push({id:dId, title:"Chapter 1: The Beginning", pages:[{id:'pg_'+Date.now(), content:"<h2 class='page-title'>Chapter 1: The Beginning</h2><p>Start writing your masterpiece here... Try adding 'John' as a keyword, then replace it with 'Jack'.</p>"}], flags:[]});
-        activeChapterId = dId; saveData();
-    }
-    if (!appData.chapters || appData.chapters.length === 0) { const nId = 'ch_' + Date.now(); appData.chapters.push({id:nId, title:"Chapter 1", pages:[{id:'pg_'+Date.now(), content:"<h2 class='page-title'>Chapter 1</h2><p><br></p>"}], flags:[]}); activeChapterId = nId; saveData(); }
-    if (!activeChapterId || !appData.chapters.find(c => c.id === activeChapterId)) activeChapterId = appData.chapters[0].id;
-}
-
-function saveData() {
-    const ac = appData.chapters.find(c => c.id === activeChapterId);
-    if (ac && !document.body.classList.contains('readonly-mode')) {
-        ac.pages = []; 
-        document.querySelectorAll('#pagesWrapper .page').forEach(el => ac.pages.push({id:el.dataset.id, content:getCleanHTML(el)}));
-        ac.flags = [];
-        document.querySelectorAll('.canvas-flag').forEach(el => {
-            ac.flags.push({ id: el.dataset.id, pageId: el.dataset.pageId, y: parseFloat(el.style.top), isRight: el.classList.contains('right'), color: el.querySelector('.flag-body').style.backgroundColor, text: el.querySelector('.flag-text').value });
-        });
-    }
-    localStorage.setItem(DB_KEY, JSON.stringify(appData));
-    if (currentUser) db.ref('users/' + currentUser.uid + '/appData').set(appData).catch(err => console.error("Sync failed:", err));
-}
-function debouncedSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(saveData, 2000); }
-
-function renderUI() { renderChapters(); if (!document.body.classList.contains('readonly-mode')) { renderActiveChapterContent(); renderCanvasPostIts(); } LoreSystem.renderKeywords(); LoreSystem.highlightKeywords(); }
-
-function switchChapter(newId) {
-    if (newId === activeChapterId || document.body.classList.contains('readonly-mode')) return;
-    saveData(); // 1. Save current text and flags to the old chapter
-    activeChapterId = newId; // 2. Set new active ID
-    renderUI(); // 3. Re-render editor with new chapter's data and flags
-}
-
-function renderChapters() {
-    chapterList.innerHTML = '';
-    appData.chapters.forEach(chapter => {
-        const li = document.createElement('li');
-        li.className = 'chapter-item' + (chapter.id === activeChapterId ? ' active' : '');
-        li.innerHTML = `<span class="chapter-title-text">${chapter.title}</span><div class="chapter-actions"><button class="chapter-icon-btn" data-action="rename" data-id="${chapter.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button><button class="chapter-icon-btn" data-action="delete" data-id="${chapter.id}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>`;
-        li.addEventListener('click', e => { if (!e.target.closest('.chapter-actions')) switchChapter(chapter.id); });
-        li.querySelector('[data-action="rename"]').addEventListener('click', e => { e.stopPropagation(); const ch = appData.chapters.find(c => c.id === chapter.id); CustomUI.prompt('Rename Chapter:', ch.title, newTitle => { if (newTitle && newTitle.trim()) { ch.title = newTitle.trim(); saveData(); renderUI(); } }); });
-        li.querySelector('[data-action="delete"]').addEventListener('click', e => { e.stopPropagation(); CustomUI.confirm(`Delete "${chapter.title}"?`, confirmed => { if (confirmed) { appData.chapters = appData.chapters.filter(c => c.id !== chapter.id); if (appData.chapters.length === 0) { const nId = 'ch_' + Date.now(); appData.chapters.push({id:nId, title:"Chapter 1", pages:[{id:'pg_'+Date.now(), content:"<h2 class='page-title'>Chapter 1</h2><p><br></p>"}], flags:[]}); activeChapterId = nId; } else { activeChapterId = appData.chapters[0].id; } saveData(); renderUI(); } }); });
-        chapterList.appendChild(li);
-    });
-}
-
-function createPageElement(id, content) { const el = document.createElement('div'); el.className = 'page'; el.id = id || 'pg_' + Date.now(); el.dataset.id = el.id; el.contentEditable = true; el.spellcheck = false; el.innerHTML = content || '<p><br></p>'; return el; }
-function renderActiveChapterContent() { const ac = appData.chapters.find(c => c.id === activeChapterId); pagesWrapper.innerHTML = ''; if (ac && ac.pages.length > 0) { ac.pages.forEach(pg => pagesWrapper.appendChild(createPageElement(pg.id, pg.content))); } else { const np = createPageElement(); pagesWrapper.appendChild(np); if (ac) ac.pages = [{id:np.dataset.id, content:np.innerHTML}]; } }
-function renderCanvasPostIts() { document.querySelectorAll('.canvas-flag').forEach(el => el.remove()); if (document.body.classList.contains('readonly-mode')) return; const ac = appData.chapters.find(c => c.id === activeChapterId); if (!ac || !ac.flags) return; ac.flags.forEach(f => { const pe = document.querySelector(`.page[data-id="${f.pageId}"]`); if (pe) createCanvasFlag(f.y, f, pe); }); }
-
-let dragData = null;
-function createCanvasFlag(y, data = {}, pageEl) {
-    const flag = document.createElement('div'); flag.className = 'canvas-flag' + (data.isRight ? ' right' : ''); flag.setAttribute('contenteditable', 'false'); flag.style.top = `${y}px`; flag.style.left = data.isRight ? 'auto' : '10px'; flag.style.right = data.isRight ? '10px' : 'auto'; const color = data.color || POST_IT_COLORS[0];
-    flag.innerHTML = `<div class="flag-body" style="background-color:${color}"></div><div class="flag-popover"><textarea class="flag-text" placeholder="Lore note...">${data.text || ''}</textarea><div class="flag-colors">${POST_IT_COLORS.map(c => `<span class="flag-dot" style="background:${c}" data-color="${c}"></span>`).join('')}</div><button class="flag-delete-btn">Delete Note</button></div>`; 
-    flag.dataset.id = data.id || 'pit_' + Date.now(); flag.dataset.pageId = pageEl.dataset.id;
-    flag.querySelectorAll('.flag-dot').forEach(dot => { dot.addEventListener('mousedown', e => e.stopPropagation()); dot.addEventListener('touchstart', e => e.stopPropagation()); dot.addEventListener('click', e => { e.stopPropagation(); flag.querySelector('.flag-body').style.backgroundColor = dot.dataset.color; debouncedSave(); }); });
-    const ta = flag.querySelector('.flag-text'); ta.addEventListener('input', e => { e.stopPropagation(); debouncedSave(); }); ta.addEventListener('mousedown', e => e.stopPropagation()); ta.addEventListener('touchstart', e => e.stopPropagation()); ta.addEventListener('keydown', e => { if (e.target.tagName === 'TEXTAREA') { e.stopPropagation(); return; } }); ta.addEventListener('keyup', e => { if (e.target.tagName === 'TEXTAREA') e.stopPropagation(); });
-    const dbtn = flag.querySelector('.flag-delete-btn'); dbtn.addEventListener('mousedown', e => e.stopPropagation()); dbtn.addEventListener('click', e => { e.stopPropagation(); const ac = appData.chapters.find(c => c.id === activeChapterId); ac.flags = ac.flags.filter(f => f.id !== flag.dataset.id); flag.remove(); saveData(); });
-    flag.addEventListener('mousedown', e => startDrag(e, false, flag, pageEl)); flag.addEventListener('touchstart', e => startDrag(e, true, flag, pageEl), {passive:false});
-    pageEl.appendChild(flag); 
-    const ac = appData.chapters.find(c => c.id === activeChapterId);
-    if (!data.id) { ac.flags.push({id:flag.dataset.id, pageId:pageEl.dataset.id, text:'', color:POST_IT_COLORS[0], y:y, isRight:data.isRight || false}); debouncedSave(); } 
-    return flag;
-}
-function startDrag(e, isTouch, el, pageEl) { e.preventDefault(); const cY = isTouch ? e.touches[0].clientY : e.clientY; dragData = {el, pageEl, startY:cY, moved:false}; el.style.zIndex = 100; }
-function moveDrag(e, isTouch) { if (!dragData) return; e.preventDefault(); const cY = isTouch ? e.touches[0].clientY : e.clientY, cX = isTouch ? e.touches[0].clientX : e.clientX; if (Math.abs(cY - dragData.startY) > 3) dragData.moved = true; const pr = dragData.pageEl.getBoundingClientRect(); let nT = cY - pr.top; nT = Math.max(0, Math.min(nT, pr.height - 40)); dragData.el.style.top = `${nT}px`; const pc = pr.left + pr.width / 2; if (cX < pc) { dragData.el.style.left = '10px'; dragData.el.style.right = 'auto'; dragData.el.classList.remove('right'); } else { dragData.el.style.left = 'auto'; dragData.el.style.right = '10px'; dragData.el.classList.add('right'); } }
-function endDrag() { if (!dragData) return; if (!dragData.moved) { document.querySelectorAll('.canvas-flag.expanded').forEach(f => { if (f !== dragData.el) f.classList.remove('expanded'); }); dragData.el.classList.toggle('expanded'); } dragData.el.style.zIndex = 10; debouncedSave(); dragData = null; }
-
-function handlePagination(pageEl) { if (pageEl.scrollHeight <= pageEl.clientHeight) return; const sel = window.getSelection(); let marker = null; if (sel.rangeCount > 0 && pageEl.contains(sel.anchorNode)) { const range = sel.getRangeAt(0); marker = document.createElement('span'); marker.id = '__caret_marker__'; range.insertNode(marker); } let nextPage = pageEl.nextElementSibling; if (!nextPage || !nextPage.classList.contains('page')) { nextPage = createPageElement('pg_' + Date.now(), '<p><br></p>'); pageEl.after(nextPage); } while (pageEl.scrollHeight > pageEl.clientHeight && pageEl.childNodes.length > 0) { const lc = pageEl.lastElementChild; if (!lc) break; if (lc.id === '__caret_marker__') break; nextPage.insertBefore(lc, nextPage.firstChild); } if (marker) { const nm = document.getElementById('__caret_marker__'); if (nm) { const te = nm.parentElement; const nr = document.createRange(); nr.setStartAfter(nm); nr.collapse(true); sel.removeAllRanges(); sel.addRange(nr); nm.remove(); te.focus(); } } handlePagination(nextPage); }
-function handlePageDeletion(e) { if (e.key === 'Backspace' || e.key === 'Delete') { const pe = e.target.closest('.page'); if (!pe) return; const ac = appData.chapters.find(c => c.id === activeChapterId); if (ac && ac.pages.length > 1) { const isEmpty = pe.innerText.trim() === ''; if (isEmpty) { e.preventDefault(); const pi = ac.pages.findIndex(p => p.id === pe.dataset.id); ac.flags = ac.flags.filter(f => f.pageId !== pe.dataset.id); pe.remove(); ac.pages.splice(pi, 1); const pp = pagesWrapper.children[pi - 1]; if (pp) { pp.focus(); const r = document.createRange(); r.selectNodeContents(pp); r.collapse(false); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } saveData(); } } } }
-
-function toggleReadOnly() {
-    const isRO = document.body.classList.toggle('readonly-mode');
-    const tb = document.querySelector('.editor-toolbar');
-    if (isRO) {
-        saveData(); tb.style.display = 'none';
-        pagesWrapper.innerHTML = '<div class="compiled-view"></div>';
-        const cv = pagesWrapper.querySelector('.compiled-view');
-        appData.chapters.forEach(ch => {
-            const content = ch.pages.map(p => p.content).join('');
-            const chDiv = document.createElement('div');
-            chDiv.innerHTML = `<h2>${ch.title}</h2><div class="compiled-content">${content}</div>`;
-            cv.appendChild(chDiv);
-        });
-        $('readonlyToggle').classList.add('active');
-    } else {
-        tb.style.display = 'flex';
-        $('readonlyToggle').classList.remove('active');
-        renderActiveChapterContent(); renderCanvasPostIts(); LoreSystem.highlightKeywords();
-    }
-}
-
-function clearFindHighlights() { const marks = pagesWrapper.querySelectorAll('mark.find-match, mark.find-active'); marks.forEach(m => { const t = document.createTextNode(m.textContent); m.parentNode.replaceChild(t, m); }); pagesWrapper.normalize(); findMatches = []; findIndex = -1; }
-function performFind(query) { clearFindHighlights(); if (!query) { findCounter.innerText = "0 of 0"; return; } const walker = document.createTreeWalker(pagesWrapper, NodeFilter.SHOW_TEXT, null, false); const textNodes = []; let node; while (node = walker.nextNode()) { if (node.parentNode.nodeName !== 'MARK' && node.nodeValue.trim() !== '') textNodes.push(node); } const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); textNodes.forEach(tn => { const text = tn.nodeValue; let li = 0, m; const frag = document.createDocumentFragment(); let hm = false; while ((m = regex.exec(text)) !== null) { hm = true; frag.appendChild(document.createTextNode(text.substring(li, m.index))); const mark = document.createElement('mark'); mark.className = 'find-match'; mark.textContent = m[0]; frag.appendChild(mark); findMatches.push(mark); li = regex.lastIndex; } if (hm) { frag.appendChild(document.createTextNode(text.substring(li))); tn.parentNode.replaceChild(frag, tn); } }); if (findMatches.length > 0) { findIndex = 0; updateFindActive(); } else { findCounter.innerText = "0 of 0"; } }
-function updateFindActive() { findMatches.forEach((m, i) => m.classList.toggle('find-active', i === findIndex)); findCounter.innerText = `${findIndex + 1} of ${findMatches.length}`; if (findMatches[findIndex]) findMatches[findIndex].scrollIntoView({behavior:'smooth', block:'center'}); }
-function navigateFind(dir) { if (findMatches.length === 0) return; findIndex += dir; if (findIndex >= findMatches.length) findIndex = 0; if (findIndex < 0) findIndex = findMatches.length - 1; updateFindActive(); }
-
-const LoreSystem = {
-    init() { this.setupTabSwitching(); this.setupKeywordInputs(); },
-    setupTabSwitching() { document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); btn.classList.add('active'); $(btn.dataset.tab + 'Tab').classList.add('active'); })); },
-    setupKeywordInputs() { $('addKeywordBtn').addEventListener('click', () => { const ni = $('newKeywordInput'), nn = $('newKeywordNotes'), name = ni.value.trim(); if (name) { appData.keywords[name] = {notes:nn.value.trim() || "No lore notes yet.", active:true, partialMatch:false, bold:false, italic:false, textColor:''}; ni.value = ''; nn.value = ''; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); } }); },
-    renderKeywords() { 
-        const list = $('keywordList'); list.innerHTML = ''; const pt = pagesWrapper.innerText.toLowerCase(); 
-        const eyeOpen = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
-        const eyeClosed = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
-        const trashIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
-        Object.keys(appData.keywords).forEach(name => { 
-            const d = appData.keywords[name]; if (d.partialMatch === undefined) d.partialMatch = false; if (d.bold === undefined) d.bold = false; if (d.italic === undefined) d.italic = false; if (d.textColor === undefined) d.textColor = ''; 
-            const sr = d.partialMatch ? new RegExp(this.escapeRegex(name), 'gi') : new RegExp(`\\b${this.escapeRegex(name)}\\b`, 'gi'); const m = pt.match(sr); const c = m ? m.length : 0; 
-            const li = document.createElement('li'); li.className = 'keyword-item'; 
-            li.innerHTML = `<div class="keyword-main"><span class="keyword-name">${name}</span><div class="keyword-actions-bar" style="width:auto;margin:0;"><button class="keyword-icon-btn" data-action="toggle" data-name="${name}">${d.active ? eyeOpen : eyeClosed}</button><button class="keyword-icon-btn" data-action="delete" data-name="${name}">${trashIcon}</button></div></div><div class="keyword-notes">${d.notes}</div><div class="keyword-actions-bar"><button class="keyword-action-btn" data-action="edit" data-name="${name}">Edit Lore</button><button class="keyword-action-btn" data-action="replace" data-name="${name}">Replace Word</button><button class="keyword-action-btn" data-action="bake" data-name="${name}">Bake Formats</button><button class="keyword-action-btn ${d.partialMatch ? 'active' : ''}" data-action="toggle-partial" data-name="${name}">${d.partialMatch ? 'Partial' : 'Exact'}</button><span class="keyword-stat">${c} mentions</span></div><div class="keyword-format-bar"><div class="fmt-btn ${d.bold ? 'active' : ''}" data-action="fmt-bold" data-name="${name}" style="font-weight:bold;">B</div><div class="fmt-btn ${d.italic ? 'active' : ''}" data-action="fmt-italic" data-name="${name}" style="font-style:italic;">I</div><input type="color" class="fmt-color" data-action="fmt-color" data-name="${name}" value="${d.textColor || '#4A4A4A'}"></div>`; 
-            list.appendChild(li); 
-        }); 
-        list.querySelectorAll('[data-action="toggle"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].active = !appData.keywords[n].active; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); })); 
-        list.querySelectorAll('[data-action="toggle-partial"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].partialMatch = !appData.keywords[n].partialMatch; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); })); 
-        list.querySelectorAll('[data-action="delete"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; CustomUI.confirm(`Delete keyword "${n}"?`, c => { if (c) { delete appData.keywords[n]; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); } }); })); 
-        list.querySelectorAll('[data-action="edit"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; CustomUI.prompt(`Edit lore notes for "${n}":`, appData.keywords[n].notes, nn => { if (nn !== null) { appData.keywords[n].notes = nn.trim() || "No lore notes yet."; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); } }); })); 
-        list.querySelectorAll('[data-action="replace"]').forEach(btn => btn.addEventListener('click', e => this.triggerGlobalReplace(e.currentTarget.dataset.name)));
-        list.querySelectorAll('[data-action="bake"]').forEach(btn => btn.addEventListener('click', e => this.triggerBakeFormats(e.currentTarget.dataset.name)));
-        list.querySelectorAll('[data-action="fmt-bold"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].bold = !appData.keywords[n].bold; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); })); 
-        list.querySelectorAll('[data-action="fmt-italic"]').forEach(btn => btn.addEventListener('click', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].italic = !appData.keywords[n].italic; debouncedSave(); this.renderKeywords(); this.highlightKeywords(); })); 
-        list.querySelectorAll('[data-action="fmt-color"]').forEach(inp => inp.addEventListener('input', e => { const n = e.currentTarget.dataset.name; appData.keywords[n].textColor = e.target.value; debouncedSave(); this.highlightKeywords(); }));
-    },
-    highlightKeywords() { 
-        const sel = window.getSelection(); let marker = null; if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) { const range = sel.getRangeAt(0); marker = document.createElement('span'); marker.id = '__caret_marker__'; range.insertNode(marker); } 
-        pagesWrapper.querySelectorAll('span.keyword-span').forEach(el => { const text = document.createTextNode(el.textContent); el.parentNode.replaceChild(text, el); }); pagesWrapper.normalize(); 
-        const walker = document.createTreeWalker(pagesWrapper, NodeFilter.SHOW_TEXT, { acceptNode: function(node) { if (!node.nodeValue || node.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT; if (node.parentNode.nodeName === 'MARK' || (node.parentNode.classList && node.parentNode.classList.contains('keyword-span'))) return NodeFilter.FILTER_REJECT; let p = node.parentNode; while (p && p !== pagesWrapper) { if (p.classList && p.classList.contains('canvas-flag')) return NodeFilter.FILTER_REJECT; p = p.parentNode; } return NodeFilter.FILTER_ACCEPT; } }, false); 
-        const textNodes = []; let node; while (node = walker.nextNode()) textNodes.push(node); 
-        const exactWords = [], partialWords = []; Object.keys(appData.keywords).forEach(k => { if (appData.keywords[k].active) { if (appData.keywords[k].partialMatch) partialWords.push(k); else exactWords.push(k); } }); 
-        let patternStr = ''; if (exactWords.length > 0) patternStr += `\\b(${exactWords.map(this.escapeRegex).join('|')})\\b`; if (partialWords.length > 0) { if (patternStr.length > 0) patternStr += '|'; patternStr += `(${partialWords.map(this.escapeRegex).join('|')})`; } 
-        if (patternStr !== '') { 
-            const regex = new RegExp(patternStr, 'gi'); 
-            textNodes.forEach(textNode => { const text = textNode.nodeValue; if (!regex.test(text)) return; regex.lastIndex = 0; let li = 0, m; const frag = document.createDocumentFragment(); let hm = false; while ((m = regex.exec(text)) !== null) { hm = true; frag.appendChild(document.createTextNode(text.substring(li, m.index))); const span = document.createElement('span'); const mn = Object.keys(appData.keywords).find(k => k.toLowerCase() === m[0].toLowerCase()); const kd = appData.keywords[mn]; span.className = 'keyword-span'; if (kd) { if (kd.bold) span.style.fontWeight = 'bold'; if (kd.italic) span.style.fontStyle = 'italic'; if (kd.textColor) span.style.color = kd.textColor; span.dataset.notes = kd.notes || ''; } span.textContent = m[0]; frag.appendChild(span); li = regex.lastIndex; } if (hm) { frag.appendChild(document.createTextNode(text.substring(li))); textNode.parentNode.replaceChild(frag, textNode); } }); 
-        } 
-        if (marker) { const nm = document.getElementById('__caret_marker__'); if (nm) { const nr = document.createRange(); nr.setStartAfter(nm); nr.collapse(true); sel.removeAllRanges(); sel.addRange(nr); nm.remove(); } } 
-    },
-    getOccurrences(name) { const isPartial = appData.keywords[name].partialMatch; const wordRegex = isPartial ? new RegExp(this.escapeRegex(name), 'gi') : new RegExp("\\b" + this.escapeRegex(name) + "\\b", 'gi'); const occurrences = []; document.querySelectorAll('#pagesWrapper .page').forEach(pageEl => { const clone = pageEl.cloneNode(true); clone.querySelectorAll('span.keyword-span,mark.find-match,mark.find-active').forEach(m => m.replaceWith(document.createTextNode(m.textContent))); clone.querySelectorAll('.canvas-flag').forEach(f => f.remove()); const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT, { acceptNode: function(node) { if (!node.nodeValue || node.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT; if (node.parentNode.nodeName === 'MARK') return NodeFilter.FILTER_REJECT; return NodeFilter.FILTER_ACCEPT; } }, false); let node; while (node = walker.nextNode()) { const originalText = node.nodeValue; wordRegex.lastIndex = 0; let match; while ((match = wordRegex.exec(originalText)) !== null) { const start = Math.max(0, match.index - 20); const end = Math.min(originalText.length, wordRegex.lastIndex + 20); const context = (start > 0 ? "..." : "") + originalText.substring(start, end).trim() + (end < originalText.length ? "..." : ""); occurrences.push(context); } } }); return occurrences; },
-    triggerGlobalReplace(oldName) { CustomUI.prompt(`Replace all instances of "${oldName}" with:`, oldName, newName => { if (!newName || newName === oldName) return; const occurrences = this.getOccurrences(oldName); if (occurrences.length === 0) { CustomUI.alert(`No occurrences of "${oldName}" found.`); return; } this.showReviewModal("Review Global Replacement", "Select instances to replace.", oldName, newName, occurrences, (accepted, oN, nN) => this.applyReplacements(oN, nN, accepted)); }); },
-    triggerBakeFormats(name) { const occurrences = this.getOccurrences(name); if (occurrences.length === 0) { CustomUI.alert(`No occurrences of "${name}" found.`); return; } this.showReviewModal("Bake Formats Permanently", "Select instances to bake formatting into the text data.", name, name, occurrences, (accepted, n) => this.applyBake(n, accepted)); },
-    showReviewModal(title, msg, oldName, newName, occurrences, callback) { 
-        const rl = $('reviewList'); rl.innerHTML = ''; 
-        occurrences.forEach((ctx, index) => { const li = document.createElement('li'); li.className = 'history-item review-item'; const isPartial = appData.keywords[oldName].partialMatch; const rs = isPartial ? this.escapeRegex(oldName) : `\\b${this.escapeRegex(oldName)}\\b`; const safeCtx = ctx.replace(new RegExp(rs, 'gi'), `<strong>${oldName}</strong>`); li.innerHTML = `<label class="review-label"><input type="checkbox" class="review-checkbox" checked data-index="${index}"><span class="review-text">${safeCtx}</span></label>`; rl.appendChild(li); }); 
-        $('reviewModalTitle').innerText = title; $('reviewModal').classList.remove('hidden'); 
-        reviewCallback = () => { const cbs = document.querySelectorAll('.review-item .review-checkbox'); const accepted = Array.from(cbs).map(cb => cb.checked); callback(accepted, oldName, newName); }; 
-    },
-    applyReplacements(oldName, newName, acceptedStatus) { 
-        const isPartial = appData.keywords[oldName].partialMatch; const regex = isPartial ? new RegExp(this.escapeRegex(oldName), 'gi') : new RegExp("\\b" + this.escapeRegex(oldName) + "\\b", 'gi'); let idx = 0; 
-        document.querySelectorAll('#pagesWrapper .page').forEach(pageEl => { 
-            pageEl.querySelectorAll('span.keyword-span,mark.find-match,mark.find-active').forEach(m => m.replaceWith(document.createTextNode(m.textContent))); pageEl.normalize(); 
-            const walker = document.createTreeWalker(pageEl, NodeFilter.SHOW_TEXT, { acceptNode: function(node) { if (!node.nodeValue || node.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT; if (node.parentNode.nodeName === 'MARK') return NodeFilter.FILTER_REJECT; let p = node.parentNode; while (p && p !== pageEl) { if (p.classList && p.classList.contains('canvas-flag')) return NodeFilter.FILTER_REJECT; p = p.parentNode; } return NodeFilter.FILTER_ACCEPT; } }, false); 
-            let node; let nodesToUpdate = []; 
-            while (node = walker.nextNode()) { const originalText = node.nodeValue; regex.lastIndex = 0; let match; let li = 0; let newText = ''; let hm = false; while ((match = regex.exec(originalText)) !== null) { hm = true; const isAccepted = acceptedStatus[idx]; idx++; newText += originalText.substring(li, match.index); if (isAccepted) newText += (match[0] === match[0].toUpperCase() ? newName.toUpperCase() : newName); else newText += match[0]; li = regex.lastIndex; } if (hm) { newText += originalText.substring(li); nodesToUpdate.push({node, newText}); } } 
-            nodesToUpdate.forEach(item => item.node.nodeValue = item.newText); 
-        }); 
-        const od = appData.keywords[oldName]; delete appData.keywords[oldName]; appData.keywords[newName] = od; saveData(); renderUI(); 
-    },
-    applyBake(name, acceptedStatus) { 
-        const isPartial = appData.keywords[name].partialMatch; const regex = isPartial ? new RegExp(this.escapeRegex(name), 'gi') : new RegExp("\\b" + this.escapeRegex(name) + "\\b", 'gi'); let idx = 0; const kd = appData.keywords[name]; 
-        let styleStr = ''; if (kd.bold) styleStr += 'font-weight:bold;'; if (kd.italic) styleStr += 'font-style:italic;'; if (kd.textColor) styleStr += `color:${kd.textColor};`; 
-        document.querySelectorAll('#pagesWrapper .page').forEach(pageEl => { 
-            pageEl.querySelectorAll('span.keyword-span,mark.find-match,mark.find-active').forEach(m => m.replaceWith(document.createTextNode(m.textContent))); pageEl.normalize(); 
-            const walker = document.createTreeWalker(pageEl, NodeFilter.SHOW_TEXT, { acceptNode: function(node) { if (!node.nodeValue || node.nodeValue.trim() === '') return NodeFilter.FILTER_REJECT; if (node.parentNode.nodeName === 'MARK') return NodeFilter.FILTER_REJECT; let p = node.parentNode; while (p && p !== pageEl) { if (p.classList && p.classList.contains('canvas-flag')) return NodeFilter.FILTER_REJECT; p = p.parentNode; } return NodeFilter.FILTER_ACCEPT; } }, false); 
-            let node; let nodesToUpdate = []; 
-            while (node = walker.nextNode()) { const originalText = node.nodeValue; regex.lastIndex = 0; let match; let li = 0; let newHTML = ''; let hm = false; while ((match = regex.exec(originalText)) !== null) { hm = true; const isAccepted = acceptedStatus[idx]; idx++; newHTML += originalText.substring(li, match.index); if (isAccepted && styleStr) newHTML += `<span class="baked-keyword" style="${styleStr}">${match[0]}</span>`; else newHTML += match[0]; li = regex.lastIndex; } if (hm) { newHTML += originalText.substring(li); const temp = document.createElement('div'); temp.innerHTML = newHTML; nodesToUpdate.push({node, parent:node.parentNode, frag:document.createDocumentFragment()}); Array.from(temp.childNodes).forEach(c => nodesToUpdate[nodesToUpdate.length - 1].frag.appendChild(c)); } } 
-            nodesToUpdate.forEach(item => item.parent.replaceChild(item.frag, item.node)); 
-        }); 
-        saveData(); renderUI(); 
-    },
-    escapeRegex(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-};
-
-function startAutoVersioning() { setInterval(() => { saveData(); let h = JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; h.push({timestamp:new Date().toLocaleString(), data:JSON.parse(JSON.stringify(appData))}); if (h.length > 20) h.shift(); localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }, 600000); }
-function renderHistory() { let h = JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; const hl = $('historyList'); hl.innerHTML = ''; if (h.length === 0) { hl.innerHTML = '<li class="history-item">No history yet.</li>'; return; } h.slice().reverse().forEach((entry, ri) => { const ai = h.length - 1 - ri; const li = document.createElement('li'); li.className = 'history-item'; li.innerHTML = `<span>${entry.timestamp}</span><button data-index="${ai}">Restore</button>`; li.querySelector('button').addEventListener('click', e => { CustomUI.confirm("Overwrite current state?", c => { if (c) { appData = h[parseInt(e.target.dataset.index)].data; if (!appData.chapters[0].flags) appData.chapters.forEach(ch => ch.flags = []); activeChapterId = appData.chapters[0].id; saveData(); renderUI(); $('historyModal').classList.add('hidden'); } }); }); hl.appendChild(li); }); }
-function syncToolbarState() { const sel = window.getSelection(); if (!sel.rangeCount || !pagesWrapper.contains(sel.anchorNode)) { $('boldBtn').classList.remove('active'); $('italicBtn').classList.remove('active'); return; } try { $('boldBtn').classList.toggle('active', document.queryCommandState('bold')); } catch (e) {} try { $('italicBtn').classList.toggle('active', document.queryCommandState('italic')); } catch (e) {} }
-function handleViewportResize() { if (window.visualViewport) { const vh = window.visualViewport.height; document.documentElement.style.setProperty('--app-height', `${vh}px`); const sel = window.getSelection(); if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) { const range = sel.getRangeAt(0); const rect = range.getBoundingClientRect(); const vv = window.visualViewport; const kt = vv.offsetTop + vv.height; const th = kt - (vv.height * 0.20); if (rect.bottom > th) { canvasContainer.scrollBy({top:rect.bottom - th, behavior:'smooth'}); } } } }
-function setupColorPalette() { 
-    const palette = $('colorPalette'); palette.innerHTML = ''; 
-    appData.colorPresets.forEach((color, i) => { const btn = document.createElement('button'); btn.className = 'preset-color'; btn.style.backgroundColor = color; btn.addEventListener('click', e => { e.preventDefault(); if (e.altKey) { const inp = document.createElement('input'); inp.type = 'color'; inp.addEventListener('change', ev => { appData.colorPresets[i] = ev.target.value; saveData(); setupColorPalette(); }); inp.click(); } else { if (savedToolbarRange) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedToolbarRange); } document.execCommand('foreColor', false, color); } }); palette.appendChild(btn); }); 
-    const wrap = document.createElement('div'); wrap.className = 'popover-actions'; wrap.innerHTML = `<input type="color" id="customColorPicker" value="#D9946B"><select id="presetSlotSelect"><option value="0">Slot 1</option><option value="1">Slot 2</option><option value="2">Slot 3</option><option value="3">Slot 4</option><option value="4">Slot 5</option><option value="5">Slot 6</option><option value="6">Slot 7</option><option value="7">Slot 8</option><option value="8">Slot 9</option><option value="9">Slot 10</option></select><button class="confirm-color-btn" id="confirmColorBtn">Done</button>`; palette.appendChild(wrap); 
-    $('customColorPicker').addEventListener('input', e => { if (savedToolbarRange) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedToolbarRange); } document.execCommand('foreColor', false, e.target.value); }); 
-    $('confirmColorBtn').addEventListener('click', () => { const c = $('customColorPicker').value; const s = $('presetSlotSelect').value; appData.colorPresets[s] = c; saveData(); setupColorPalette(); palette.classList.add('hidden'); }); 
-}
-
-function setupEventListeners() {
-    $('sidebarToggle').addEventListener('click', () => $('sidebar').classList.toggle('collapsed'));
-    $('zenToggle').addEventListener('click', () => { document.body.classList.toggle('zen-mode'); $('zenToggle').classList.toggle('active'); });
-    $('fullscreenToggle').addEventListener('click', () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(err => console.log(err)); else if (document.exitFullscreen) document.exitFullscreen(); });
-    $('readonlyToggle').addEventListener('click', toggleReadOnly);
-    if (window.innerWidth <= 768) $('sidebar').classList.add('collapsed');
-    if (window.visualViewport) { window.visualViewport.addEventListener('resize', handleViewportResize); window.visualViewport.addEventListener('scroll', handleViewportResize); } handleViewportResize();
-
-    $('boldBtn').addEventListener('click', () => document.execCommand('bold'));
-    $('italicBtn').addEventListener('click', () => document.execCommand('italic'));
-    const sl = $('fontSizeSelect'), cw = document.querySelector('.color-popover-wrap');
-    [sl, cw].forEach(el => { el.addEventListener('mousedown', () => { const sel = window.getSelection(); if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) savedToolbarRange = sel.getRangeAt(0).cloneRange(); }); el.addEventListener('touchstart', () => { const sel = window.getSelection(); if (sel.rangeCount > 0 && pagesWrapper.contains(sel.anchorNode)) savedToolbarRange = sel.getRangeAt(0).cloneRange(); }); });
-    sl.addEventListener('change', e => { if (savedToolbarRange) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedToolbarRange); } document.execCommand('fontSize', false, e.target.value); });
-    $('colorToggleBtn').addEventListener('click', () => $('colorPalette').classList.toggle('hidden'));
-    document.addEventListener('selectionchange', syncToolbarState);
-
-    $('findToggle').addEventListener('click', () => { findPanel.classList.toggle('active'); if (findPanel.classList.contains('active')) findInput.focus(); });
-    $('findCloseBtn').addEventListener('click', () => { findPanel.classList.remove('active'); clearFindHighlights(); });
-    let searchDebounce; findInput.addEventListener('input', e => { clearTimeout(searchDebounce); searchDebounce = setTimeout(() => performFind(e.target.value), 300); });
-    $('findNextBtn').addEventListener('click', () => navigateFind(1));
-    $('findPrevBtn').addEventListener('click', () => navigateFind(-1));
-
-    pagesWrapper.addEventListener('input', e => {
-        if (e.target.classList.contains('page')) { const pe = e.target.closest('.page'); if (pe) handlePagination(pe); }
-        clearTimeout(highlightTimeout);
-        highlightTimeout = setTimeout(() => LoreSystem.highlightKeywords(), 500);
-        if (findMatches.length > 0) performFind(findInput.value);
-        debouncedSave();
-    });
-    pagesWrapper.addEventListener('keydown', handlePageDeletion);
-
-    $('addChapterBtn').addEventListener('click', () => { const nId = 'ch_' + Date.now(); const cn = appData.chapters.length + 1; appData.chapters.push({id:nId, title:`Chapter ${cn}: Untitled`, pages:[{id:'pg_'+Date.now(), content:`<h2 class='page-title'>Chapter ${cn}: Untitled</h2><p><br></p>`}], flags:[]}); switchChapter(nId); });
-
-    document.addEventListener('mousemove', e => moveDrag(e, false));
-    document.addEventListener('touchmove', e => moveDrag(e, true), {passive:false});
-    document.addEventListener('mouseup', endDrag);
-    document.addEventListener('touchend', endDrag);
-
-    const fab = $('postItFab');
-    fab.addEventListener('mousedown', e => { const pe = document.querySelector('#pagesWrapper .page'); if (!pe) return; const nf = createCanvasFlag(20, {}, pe); startDrag(e, false, nf, pe); });
-    fab.addEventListener('touchstart', e => { e.preventDefault(); const pe = document.querySelector('#pagesWrapper .page'); if (!pe) return; const nf = createCanvasFlag(20, {}, pe); startDrag(e, true, nf, pe); }, {passive:false});
-
-    $('historyToggle').addEventListener('click', () => { renderHistory(); $('historyModal').classList.remove('hidden'); });
-    $('closeHistoryBtn').addEventListener('click', () => $('historyModal').classList.add('hidden'));
-    $('closeReviewBtn').addEventListener('click', () => $('reviewModal').classList.add('hidden'));
-    $('applyReviewBtn').addEventListener('click', () => { if (reviewCallback) reviewCallback(); $('reviewModal').classList.add('hidden'); });
-
-    document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); findPanel.classList.add('active'); findInput.focus(); } if (e.key === 'Escape') { findPanel.classList.remove('active'); clearFindHighlights(); } });
-
-    $('signupBtn').addEventListener('click', () => { const em = $('authEmail').value, ps = $('authPass').value; if (!em || !ps) { CustomUI.alert("Please enter an email and password."); return; } auth.createUserWithEmailAndPassword(em, ps).catch(err => CustomUI.alert(err.message, "Sign Up Error")); });
-    $('loginBtn').addEventListener('click', () => { const em = $('authEmail').value, ps = $('authPass').value; if (!em || !ps) { CustomUI.alert("Please enter an email and password."); return; } auth.signInWithEmailAndPassword(em, ps).catch(err => CustomUI.alert(err.message, "Login Error")); });
-    $('logoutBtn').addEventListener('click', () => auth.signOut());
-}
-
-auth.onAuthStateChanged(user => {
-    const af = $('authForm'), ad = $('authDetails');
-    if (user) {
-        currentUser = user; af.style.display = 'none'; ad.style.display = 'flex'; $('userEmail').innerText = user.email;
-        db.ref('users/' + user.uid + '/appData').once('value').then(snapshot => {
-            if (snapshot.exists()) { const data = snapshot.val(); if (data && data.chapters) { appData = data; if (!appData.colorPresets) appData.colorPresets = ['#000000','#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#FFA500','#800080','#FFC0CB','#008080']; if (appData.postIts && appData.postIts.length) { appData.chapters.forEach(ch => { ch.flags = appData.postIts.filter(f => f.pageId && ch.pages.some(p => p.id === f.pageId)); }); delete appData.postIts; } appData.chapters.forEach(ch => { if (ch.content && !ch.pages) { ch.pages = [{id:'pg_'+Date.now(), content:ch.content}]; delete ch.content; } if (!ch.pages) ch.pages = []; if (!ch.flags) ch.flags = []; }); if (appData.chapters.length > 0) activeChapterId = appData.chapters[0].id; else { loadData(); saveData(); } } else { loadData(); saveData(); } } else { loadData(); db.ref('users/' + user.uid + '/appData').set(appData); }
-            setupColorPalette(); renderUI();
-        }).catch(err => { console.error("Error loading cloud data:", err); loadData(); renderUI(); });
-    } else {
-        currentUser = null; af.style.display = 'flex'; ad.style.display = 'none'; loadData(); setupColorPalette(); renderUI();
-    }
-});
-
-            setupEventListeners();
-            LoreSystem.init();
-            startAutoVersioning();
-        });
-    </script>
+<script src="js/core.js"></script>
+<script src="js/saveindicator.js"></script>
+<script src="js/books.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/lore.js"></script>
+<script src="js/history.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/export-import.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/mobile.js"></script>
+<script src="js/app.js"></script>
+<script src="js/focus.js"></script>
+<script src="js/search.js"></script>
+<script src="js/namegen.js"></script>
+<script src="js/analyzer.js"></script>
 </body>
 </html>

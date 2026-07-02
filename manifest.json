@@ -1,0 +1,20 @@
+{
+  "name": "BookSpritz",
+  "short_name": "BookSpritz",
+  "description": "A book writing app with a lore system, margin notes, and version history.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FDFBF7",
+  "theme_color": "#D9946B",
+  "scope": "./",
+  "icons": [
+    { "src": "icon-32.png", "sizes": "32x32", "type": "image/png", "purpose": "any" },
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["productivity", "books", "writing"],
+  "lang": "en"
+}
