@@ -137,7 +137,7 @@ mark.find-active{background-color:var(--accent-orange);color:#fff}
 .chapter-drag-handle svg{width:16px;height:16px}
 .chapter-item.active .chapter-drag-handle{color:rgba(255,255,255,0.7)}
 .chapter-item.reordering{transition:transform 0.2s ease}
-.install-banner{display:none;position:fixed;bottom:calc(20px + env(safe-area-inset-bottom) + 70px);left:50%;transform:translateX(-50%);background:var(--accent-orange);color:#fff;padding:12px 18px;border-radius:30px;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:200;display:flex;align-items:center;gap:12px;max-width:90vw;font-size:0.9rem}
+.install-banner{display:none;position:fixed;bottom:calc(20px + env(safe-area-inset-bottom) + 70px);left:50%;transform:translateX(-50%);background:var(--accent-orange);color:#fff;padding:12px 18px;border-radius:30px;box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:200;align-items:center;gap:12px;max-width:90vw;font-size:0.9rem}
 .install-banner.show{display:flex}
 .install-banner button{background:rgba(255,255,255,0.25);border:none;color:#fff;padding:6px 14px;border-radius:16px;cursor:pointer;font-weight:700;white-space:nowrap}
 .install-banner button:hover{background:rgba(255,255,255,0.4)}
@@ -340,6 +340,21 @@ body.focus-mode .page p.focused { background: rgba(240, 230, 177, 0.3); border-r
 
 /* === Tutorial === */
 @keyframes tutFadeIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
-.tutorial-highlight{outline:3px solid var(--accent-orange)!important;outline-offset:2px;border-radius:6px;box-shadow:0 0 0 9999px rgba(0,0,0,0.15);position:relative;z-index:9998}
-#tutorialBox button:hover{opacity:0.85}
+body.tutorial-active{overflow:hidden!important}
+body.tutorial-active .canvas-container{overflow:hidden!important}
+body.tutorial-active .tab-content{overflow:hidden!important}
+#tutorialOverlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:9997;pointer-events:auto;background:transparent}
+.tutorial-highlight{position:relative;z-index:9998;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,0.55);outline:3px solid var(--accent-orange);outline-offset:3px;border-radius:8px;transition:box-shadow 0.3s ease}
+#tutorialBox{position:fixed;z-index:9999;pointer-events:auto;background:var(--page-bg,#fff);border-radius:12px;padding:0;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.3);animation:tutFadeIn 0.3s ease;overflow:hidden;border:1px solid var(--border-color)}
+.tut-title{font-family:'Merriweather',serif;color:var(--accent-orange,#D9946B);font-size:1.25rem;font-weight:700;padding:24px 28px 8px 28px}
+.tut-body{font-size:0.92rem;line-height:1.6;color:var(--text-color,#4A4A4A);padding:0 28px 20px 28px}
+.tut-footer{display:flex;justify-content:space-between;align-items:center;padding:12px 28px;border-top:1px solid var(--border-color);background:var(--panel-bg);gap:12px}
+.tut-progress{font-size:0.75rem;color:var(--text-muted,#8A8A8A);font-weight:600;white-space:nowrap}
+.tut-buttons{display:flex;gap:6px;align-items:center}
+.tut-btn{padding:8px 16px;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;transition:opacity 0.2s;border:none}
+.tut-btn:hover{opacity:0.85}
+.tut-btn-primary{background:var(--accent-orange,#D9946B);color:#fff}
+.tut-btn-secondary{background:var(--bg-color);color:var(--text-color);border:1px solid var(--border-color)}
+.tut-btn-text{background:none;color:var(--text-muted);font-size:0.8rem;padding:8px 10px}
+@media (max-width:480px){#tutorialBox{max-width:92%}.tut-title{font-size:1.1rem;padding:18px 20px 6px 20px}.tut-body{padding:0 20px 16px 20px;font-size:0.88rem}.tut-footer{padding:10px 20px}.tut-btn{padding:6px 12px;font-size:0.8rem}}
 @media print{#tutorialOverlay,.tutorial-highlight{display:none!important}}
