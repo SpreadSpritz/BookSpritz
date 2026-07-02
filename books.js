@@ -9,15 +9,21 @@ function migrateToMultiBook() {
     if (appData.books) {
         // Ensure each book has keywords (older migrations might have missed it)
         appData.books.forEach(b => { if (!b.keywords) b.keywords = {}; if (!b.chapters) b.chapters = []; });
-        return;
+    } else {
+        // Legacy single-book → multi-book migration
+        const oldChapters = appData.chapters || [];
+        const oldKeywords = appData.keywords || {};
+        appData.books = [{ id: 'bk_' + Date.now(), title: 'My First Book', chapters: oldChapters, keywords: oldKeywords }];
+        delete appData.chapters;
+        delete appData.keywords;
     }
-    // Legacy single-book → multi-book migration
-    const oldChapters = appData.chapters || [];
-    const oldKeywords = appData.keywords || {};
-    appData.books = [{ id: 'bk_' + Date.now(), title: 'My First Book', chapters: oldChapters, keywords: oldKeywords }];
-    appData.activeBookId = appData.books[0].id;
-    delete appData.chapters;
-    delete appData.keywords;
+    // CRITICAL: ensure at least one book exists (fresh install has books:[])
+    if (!appData.books || appData.books.length === 0) {
+        const chId = 'ch_' + Date.now();
+        appData.books = [{ id: 'bk_' + Date.now(), title: 'My First Book', chapters: [{ id: chId, title: 'Chapter 1: The Beginning', pages: [{ id: 'pg_' + Date.now(), content: '<h2 class="page-title">Chapter 1: The Beginning</h2><p>Start writing your masterpiece here...</p>' }], flags: [] }], keywords: {} }];
+        activeChapterId = chId;
+    }
+    if (!appData.activeBookId) appData.activeBookId = appData.books[0].id;
 }
 function renderBookSelect() {
     const sel = $('bookSelect');

@@ -15,9 +15,16 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<style>
+#diag-overlay{position:fixed;bottom:10px;left:10px;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:6px;padding:8px 12px;font-size:0.8rem;font-family:monospace;z-index:99999;max-width:350px;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+#diag-overlay.ok{background:#d4edda;color:#155724;border-color:#28a745}
+#diag-overlay.err{background:#f8d7da;color:#721c24;border-color:#dc3545}
+#diag-overlay.hidden{display:none}
+</style>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<div id="diag-overlay">Loading BookSpritz...</div>
 <header class="app-header">
 <div class="header-left">
 <button id="sidebarToggle" class="icon-btn" title="Toggle Chapters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
@@ -186,6 +193,13 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script>
+// Diagnostic — runs before any external JS, sets up error capture
+window.__diagErrors = [];
+window.addEventListener('error', e => {
+    window.__diagErrors.push(e.message + (e.filename ? ' (' + e.filename.split('/').pop() + ':' + e.lineno + ')' : ''));
+});
+</script>
 <script src="js/core.js"></script>
 <script src="js/saveindicator.js"></script>
 <script src="js/books.js"></script>
@@ -201,5 +215,34 @@
 <script src="js/search.js"></script>
 <script src="js/namegen.js"></script>
 <script src="js/analyzer.js"></script>
+<script>
+// Final diagnostic — runs after all scripts loaded
+(function() {
+    var overlay = document.getElementById('diag-overlay');
+    if (!overlay) return;
+    var checks = [];
+    checks.push(['$', typeof $ === 'function']);
+    checks.push(['appData', typeof appData !== 'undefined']);
+    checks.push(['CustomUI', typeof CustomUI === 'object']);
+    checks.push(['setupEventListeners', typeof setupEventListeners === 'function']);
+    checks.push(['LoreSystem', typeof LoreSystem === 'object']);
+    checks.push(['Firebase', typeof firebase !== 'undefined']);
+    checks.push(['auth', auth !== null]);
+    var failed = checks.filter(c => !c[1]);
+    if (window.__diagErrors.length > 0) {
+        overlay.className = 'err';
+        overlay.innerHTML = '<b>JS Errors:</b><br>' + window.__diagErrors.slice(0, 5).join('<br>');
+    } else if (failed.length > 0) {
+        overlay.className = 'err';
+        overlay.innerHTML = '<b>Missing:</b> ' + failed.map(c => c[0]).join(', ');
+    } else {
+        overlay.className = 'ok';
+        overlay.innerHTML = 'BookSpritz ready ✓ — click to dismiss';
+        overlay.onclick = () => overlay.classList.add('hidden');
+        setTimeout(() => overlay.classList.add('hidden'), 5000);
+    }
+    console.log('BookSpritz diagnostics:', checks.map(c => c[0] + '=' + (c[1]?'OK':'FAIL')).join(', '));
+})();
+</script>
 </body>
 </html>

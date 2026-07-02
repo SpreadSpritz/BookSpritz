@@ -72,27 +72,36 @@ function setupEventListeners() {
 
     document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); findPanel.classList.add('active'); findInput.focus(); } if (e.key === 'Escape') { findPanel.classList.remove('active'); clearFindHighlights(); } });
 
-    $('signupBtn').addEventListener('click', () => { const em = $('authEmail').value, ps = $('authPass').value; if (!em || !ps) { CustomUI.alert("Please enter an email and password."); return; } auth.createUserWithEmailAndPassword(em, ps).catch(err => CustomUI.alert(err.message, "Sign Up Error")); });
-    $('loginBtn').addEventListener('click', () => { const em = $('authEmail').value, ps = $('authPass').value; if (!em || !ps) { CustomUI.alert("Please enter an email and password."); return; } auth.signInWithEmailAndPassword(em, ps).catch(err => CustomUI.alert(err.message, "Login Error")); });
-    $('logoutBtn').addEventListener('click', () => auth.signOut());
+    $('signupBtn').addEventListener('click', () => { if (!auth) { CustomUI.alert('Cloud sync unavailable. App works locally only.'); return; } const em = $('authEmail').value, ps = $('authPass').value; if (!em || !ps) { CustomUI.alert("Please enter an email and password."); return; } auth.createUserWithEmailAndPassword(em, ps).catch(err => CustomUI.alert(err.message, "Sign Up Error")); });
+    $('loginBtn').addEventListener('click', () => { if (!auth) { CustomUI.alert('Cloud sync unavailable. App works locally only.'); return; } const em = $('authEmail').value, ps = $('authPass').value; if (!em || !ps) { CustomUI.alert("Please enter an email and password."); return; } auth.signInWithEmailAndPassword(em, ps).catch(err => CustomUI.alert(err.message, "Login Error")); });
+    $('logoutBtn').addEventListener('click', () => { if (auth) auth.signOut(); });
 }
 
-auth.onAuthStateChanged(user => {
-    const af = $('authForm'), ad = $('authDetails');
-    if (user) {
-        currentUser = user; af.style.display = 'none'; ad.style.display = 'flex'; $('userEmail').innerText = user.email;
-        db.ref('users/' + user.uid + '/appData').once('value').then(snapshot => {
-            if (snapshot.exists()) { const data = snapshot.val(); if (data && (data.chapters || data.books)) { appData = data; if (!appData.colorPresets) appData.colorPresets = ['#000000','#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#FFA500','#800080','#FFC0CB','#008080']; migrateToMultiBook(); if (appData.postIts && appData.postIts.length) { const ab1 = getActiveBook(); if (ab1) ab1.chapters.forEach(ch => { ch.flags = appData.postIts.filter(f => f.pageId && ch.pages.some(p => p.id === f.pageId)); }); delete appData.postIts; } const ab2 = getActiveBook(); if (ab2) ab2.chapters.forEach(ch => { if (ch.content && !ch.pages) { ch.pages = [{id:'pg_'+Date.now(), content:ch.content}]; delete ch.content; } if (!ch.pages) ch.pages = []; if (!ch.flags) ch.flags = []; }); const ab3 = getActiveBook(); if (ab3 && ab3.chapters.length > 0) activeChapterId = ab3.chapters[0].id; else { loadData(); saveData(); } } else { loadData(); saveData(); } } else { loadData(); db.ref('users/' + user.uid + '/appData').set(appData); }
-            setupColorPalette(); renderUI();
+// Auth state — only if Firebase loaded successfully
+if (auth) {
+    auth.onAuthStateChanged(user => {
+        const af = $('authForm'), ad = $('authDetails');
+        if (user) {
+            currentUser = user; af.style.display = 'none'; ad.style.display = 'flex'; $('userEmail').innerText = user.email;
+            db.ref('users/' + user.uid + '/appData').once('value').then(snapshot => {
+                if (snapshot.exists()) { const data = snapshot.val(); if (data && (data.chapters || data.books)) { appData = data; if (!appData.colorPresets) appData.colorPresets = ['#000000','#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#FFA500','#800080','#FFC0CB','#008080']; migrateToMultiBook(); if (appData.postIts && appData.postIts.length) { const ab1 = getActiveBook(); if (ab1) ab1.chapters.forEach(ch => { ch.flags = appData.postIts.filter(f => f.pageId && ch.pages.some(p => p.id === f.pageId)); }); delete appData.postIts; } const ab2 = getActiveBook(); if (ab2) ab2.chapters.forEach(ch => { if (ch.content && !ch.pages) { ch.pages = [{id:'pg_'+Date.now(), content:ch.content}]; delete ch.content; } if (!ch.pages) ch.pages = []; if (!ch.flags) ch.flags = []; }); const ab3 = getActiveBook(); if (ab3 && ab3.chapters.length > 0) activeChapterId = ab3.chapters[0].id; else { loadData(); saveData(); } } else { loadData(); saveData(); } } else { loadData(); db.ref('users/' + user.uid + '/appData').set(appData); }
+                setupColorPalette(); renderUI();
+                $('spellcheckToggle').classList.toggle('active', appData.spellcheck !== false);
+                applySettings(); lastWordCount = computeStats().totals.words; updateDailyBadge();
+            }).catch(err => { console.error("Error loading cloud data:", err); loadData(); renderUI(); });
+        } else {
+            currentUser = null; af.style.display = 'flex'; ad.style.display = 'none'; loadData(); setupColorPalette(); renderUI();
             $('spellcheckToggle').classList.toggle('active', appData.spellcheck !== false);
             applySettings(); lastWordCount = computeStats().totals.words; updateDailyBadge();
-        }).catch(err => { console.error("Error loading cloud data:", err); loadData(); renderUI(); });
-    } else {
-        currentUser = null; af.style.display = 'flex'; ad.style.display = 'none'; loadData(); setupColorPalette(); renderUI();
+        }
+    });
+} else {
+    // Firebase not available — load local data directly
+    window.addEventListener('DOMContentLoaded', () => {
+        loadData(); setupColorPalette(); renderUI();
         $('spellcheckToggle').classList.toggle('active', appData.spellcheck !== false);
-        applySettings(); lastWordCount = computeStats().totals.words; updateDailyBadge();
-    }
-});
+    });
+}
 
 
 

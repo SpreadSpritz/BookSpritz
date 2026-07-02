@@ -35,7 +35,7 @@ function saveData() {
         });
     }
     const saved = safeStorage.set(DB_KEY, JSON.stringify(appData));
-    if (currentUser) db.ref('users/' + currentUser.uid + '/appData').set(appData).then(() => updateSaveIndicator('saved')).catch(err => { console.error("Sync failed:", err); updateSaveIndicator('error'); });
+    if (currentUser && db) db.ref('users/' + currentUser.uid + '/appData').set(appData).then(() => updateSaveIndicator('saved')).catch(err => { console.error("Sync failed:", err); updateSaveIndicator('error'); });
     else if (saved) updateSaveIndicator('saved');
     else updateSaveIndicator('error');
 }

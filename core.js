@@ -5,8 +5,20 @@
 
 const $ = id => document.getElementById(id);
 const firebaseConfig={apiKey:"AIzaSyBt3A8YQaYE1fMdXwlh7AvPu0w_7F8f-e4",authDomain:"spreadapoteck.firebaseapp.com",databaseURL:"https://spreadapoteck-default-rtdb.europe-west1.firebasedatabase.app",projectId:"spreadapoteck",storageBucket:"spreadapoteck.firebasestorage.app",messagingSenderId:"1060961337221",appId:"1:1060961337221:web:78c2a19fe6197a29e8ceec",measurementId:"G-39VC7GKE4N"};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(), db=firebase.database();
+// Firebase init is wrapped in try-catch so the app works even if Firebase CDN is blocked (ad blockers, etc.)
+let auth = null, db = null;
+try {
+    if (typeof firebase !== 'undefined') {
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.database();
+        console.log('Firebase loaded successfully');
+    } else {
+        console.warn('Firebase SDK not loaded — cloud sync disabled. App still works locally.');
+    }
+} catch(e) {
+    console.error('Firebase init failed:', e);
+}
 const DB_KEY='bookSpritzData', HISTORY_KEY='bookSpritzHistory';
 let appData={books:[],activeBookId:null,colorPresets:['#000000','#FFFFFF','#FF0000','#0000FF','#008000','#FFFF00','#FFA500','#800080','#FFC0CB','#008080']};
 let activeChapterId=null, saveTimeout=null, savedToolbarRange=null, currentUser=null, findMatches=[], findIndex=-1, reviewCallback=null, highlightTimeout=null;

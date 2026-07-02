@@ -17,8 +17,10 @@ function readingTime(words) {
     return h + 'h ' + m + 'm';
 }
 function computeStats() {
-    const totals = { words: 0, chars: 0, charsNoSpaces: 0, chapters: getActiveBook().chapters.length, keywords: Object.keys(getActiveBook().keywords).length };
-    const perChapter = getActiveBook().chapters.map(ch => {
+    const book = getActiveBook();
+    if (!book) return { totals: { words: 0, chars: 0, charsNoSpaces: 0, chapters: 0, keywords: 0 }, perChapter: [] };
+    const totals = { words: 0, chars: 0, charsNoSpaces: 0, chapters: book.chapters.length, keywords: Object.keys(book.keywords || {}).length };
+    const perChapter = book.chapters.map(ch => {
         const html = ch.pages.map(p => p.content || '').join(' ');
         const w = countWords(html), c = countChars(html, true), cns = countChars(html, false);
         totals.words += w; totals.chars += c; totals.charsNoSpaces += cns;
