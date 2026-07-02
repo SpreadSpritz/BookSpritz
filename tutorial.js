@@ -12,7 +12,7 @@ const TUTORIAL_DEMO = {
     chapterContent: '<h2 class="page-title">Tutorial Demo</h2><p>The dragon soared over the mountains, its scales gleaming in the dawn light. With a mighty roar, the dragon descended toward the village.</p><p>A young hero named Elara stepped forward, her sword drawn. The dragon paused, sensing her courage.</p>',
     keyword: 'dragon',
     keywordNotes: 'A mighty creature that soars over the mountains.',
-    findWord: 'dragon'
+    findWord: 'hero'
 };
 
 // ════════════════════════════════════════════════════════════════════
@@ -44,7 +44,7 @@ const TUTORIAL_STEPS = [
     // --- Editor ---
     { title: 'The Editor', body: 'This is where you write! Content flows across book-like pages automatically. When a page fills up, a new one is created. Press Backspace on an empty page to delete it and merge back.', selector: '#pagesWrapper', position: 'left', onEnter: () => { switchToTab('chapters'); ensureSidebarOpen(); } },
     { title: 'Formatting Toolbar', body: 'Format your text with bold, italic, font size, and text colors. The color palette has 10 customizable preset slots — Alt-click a preset to reassign it. All formatting is preserved when you export.', selector: '#editorToolbar', position: 'bottom' },
-    { title: 'Live Demo: Find in Page', body: 'Let me show you the Find feature. I\'ve opened the search panel and searched for "' + TUTORIAL_DEMO.findWord + '". See the matches highlighted in the text? Use the arrow buttons to jump between matches, or press Ctrl+F anytime to open Find.', selector: '#findPanel', position: 'bottom', onEnter: setupFindDemo, onExit: cleanupFindDemo },
+    { title: 'Live Demo: Find in Page', body: 'Let me show you the Find feature. I\'ve opened the search panel and searched for "' + TUTORIAL_DEMO.findWord + '". See the matches highlighted in the text? Use the arrow buttons to jump between matches, or press Ctrl+F anytime to open Find.', selector: '#findPanel', position: 'bottom-screen', onEnter: setupFindDemo, onExit: cleanupFindDemo },
 
     // --- More features ---
     { title: 'Margin Notes', body: 'Click this orange + button to add a draggable sticky note in the margin. Drag it up/down to reposition, or left/right to snap to either side. Click a note to expand it and write inside. Notes are saved per chapter.', selector: '#postItFab', position: 'left' },
@@ -181,6 +181,10 @@ function positionTutorialBox(targetEl, position) {
             left = (window.innerWidth - boxW) / 2;
             top = rect.bottom + margin;
             if (top + boxH > window.innerHeight - margin) top = Math.max(margin, rect.top - boxH - margin);
+        } else if (position === 'bottom-screen') {
+            // Place at bottom-center of screen, regardless of target position
+            left = (window.innerWidth - boxW) / 2;
+            top = window.innerHeight - boxH - margin;
         }
     }
     top = Math.max(16, Math.min(top, window.innerHeight - tutorialBox.offsetHeight - 16));
@@ -266,8 +270,15 @@ function setupFindDemo() {
     // Open find panel
     findPanel.classList.add('active');
     findInput.value = TUTORIAL_DEMO.findWord;
-    // Trigger search
-    setTimeout(() => performFind(TUTORIAL_DEMO.findWord), 200);
+    // Trigger search, then scroll the first match to the top so it's visible
+    // above the tutorial popup (which sits at the bottom of the screen)
+    setTimeout(() => {
+        performFind(TUTORIAL_DEMO.findWord);
+        setTimeout(() => {
+            const match = document.querySelector('mark.find-match');
+            if (match) match.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
+    }, 200);
 }
 
 function cleanupFindDemo() {
@@ -283,6 +294,10 @@ function cleanupFindDemo() {
 //  CLEANUP: Remove demo chapter and restore state
 // ════════════════════════════════════════════════════════════════════
 function cleanupTutorial() {
+    // CRITICAL: Clear any pending debounced save so it doesn't fire
+    // after we've swapped the DOM and overwrite the wrong chapter
+    if (saveTimeout) { clearTimeout(saveTimeout); saveTimeout = null; }
+    
     const book = getActiveBook();
     if (book) {
         // Remove demo chapter by ID (not name)
@@ -309,9 +324,10 @@ function cleanupTutorial() {
     }
     // Restore original tab
     switchToTab(tutorialState.originalTab || 'chapters');
-    // Save and re-render
-    saveData();
+    // CRITICAL: Render FIRST (swaps DOM from demo content to original chapter's content)
+    // THEN save (so saveData reads the correct content from the DOM)
     renderUI();
+    saveData();
     tutorialState.demoChapterId = null;
     tutorialState.demoKeywordAdded = false;
 }

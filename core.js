@@ -60,10 +60,8 @@ if ('serviceWorker' in navigator) {
 let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
-    // Don't show banner if user has already installed OR permanently dismissed it
-    if (safeStorage.get('bookspritz_installed') || safeStorage.get('bookspritz_install_dismissed')) return;
     deferredPrompt = e;
-    $('installBanner').classList.add('show');
+    if (!safeStorage.get('bookspritz_install_dismissed')) $('installBanner').classList.add('show');
 });
 window.addEventListener('DOMContentLoaded', () => {
     const installBtn = $('installBtn');
@@ -74,20 +72,11 @@ window.addEventListener('DOMContentLoaded', () => {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         console.log('Install outcome:', outcome);
-        if (outcome === 'accepted') safeStorage.set('bookspritz_installed', '1');
         deferredPrompt = null;
     });
-    if (installClose) installClose.addEventListener('click', () => {
-        $('installBanner').classList.remove('show');
-        safeStorage.set('bookspritz_install_dismissed', '1'); // Permanent dismiss
-    });
+    if (installClose) installClose.addEventListener('click', () => { $('installBanner').classList.remove('show'); safeStorage.set('bookspritz_install_dismissed', '1'); });
 });
-window.addEventListener('appinstalled', () => {
-    $('installBanner').classList.remove('show');
-    safeStorage.set('bookspritz_installed', '1'); // Never show again after install
-    deferredPrompt = null;
-    console.log('BookSpritz installed!');
-});
+window.addEventListener('appinstalled', () => { $('installBanner').classList.remove('show'); deferredPrompt = null; console.log('BookSpritz installed!'); });
 
 // --- Mobile tap-to-view lore (keyword tooltip) ---
 function showLorePopover(keywordSpan) {
