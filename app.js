@@ -69,6 +69,7 @@ function setupEventListeners() {
     });
     $('settingsToggle').addEventListener('click', () => { populateSettingsUI(); $('settingsModal').classList.remove('hidden'); });
     $('closeSettingsBtn').addEventListener('click', () => $('settingsModal').classList.add('hidden'));
+    $('viewTutorialBtn').addEventListener('click', () => { $('settingsModal').classList.add('hidden'); startTutorial(); });
 
     document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); findPanel.classList.add('active'); findInput.focus(); } if (e.key === 'Escape') { findPanel.classList.remove('active'); clearFindHighlights(); } });
 

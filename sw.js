@@ -2,7 +2,7 @@
 // Strategy: cache-first for the app shell (HTML, CSS, JS, icons, fonts),
 // network-first for Firebase (so auth/sync always uses fresh data when online).
 
-const CACHE_VERSION = 'bookspritz-v5';
+const CACHE_VERSION = 'bookspritz-v6';
 const APP_SHELL = [
   './',
   './index.html',
@@ -27,6 +27,7 @@ const APP_SHELL = [
   './search.js',
   './namegen.js',
   './analyzer.js',
+  './tutorial.js',
   './saveindicator.js',
   // Google Fonts — cached for offline writing
   'https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&display=swap',
