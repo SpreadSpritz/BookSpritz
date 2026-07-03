@@ -69,6 +69,9 @@ function setupEventListeners() {
     });
     $('settingsToggle').addEventListener('click', () => { populateSettingsUI(); $('settingsModal').classList.remove('hidden'); });
     $('closeSettingsBtn').addEventListener('click', () => $('settingsModal').classList.add('hidden'));
+    // These also have onclick attributes in HTML as backup, in case this code doesn't run
+    try { $('viewTutorialBtn').addEventListener('click', handleViewTutorial); } catch(e) { console.warn('viewTutorialBtn listener failed:', e); }
+    try { $('showInstallBannerBtn').addEventListener('click', handleShowInstallBanner); } catch(e) { console.warn('showInstallBannerBtn listener failed:', e); }
 
     document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); findPanel.classList.add('active'); findInput.focus(); } if (e.key === 'Escape') { findPanel.classList.remove('active'); clearFindHighlights(); } });
 

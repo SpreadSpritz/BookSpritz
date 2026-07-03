@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#D9946B">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="BookSpritz">
@@ -185,8 +186,8 @@
 </label>
 </div>
 <div class="settings-actions">
-<button id="showInstallBannerBtn" class="add-btn" style="border-style:solid;border-color:var(--border-color);color:var(--text-muted);font-size:0.85rem;">Show Install Banner Again</button>
-<button id="viewTutorialBtn" class="add-btn" style="border-style:solid;border-color:var(--accent-orange);color:var(--accent-orange);">View Tutorial</button>
+<button id="showInstallBannerBtn" class="add-btn" style="border-style:solid;border-color:var(--border-color);color:var(--text-muted);font-size:0.85rem;" onclick="handleShowInstallBanner()">Show Install Banner Again</button>
+<button id="viewTutorialBtn" class="add-btn" style="border-style:solid;border-color:var(--accent-orange);color:var(--accent-orange);" onclick="handleViewTutorial()">View Tutorial</button>
 <button id="resetSettingsBtn" class="add-btn">Reset to Defaults</button>
 <button id="closeSettingsBtn" class="add-btn primary-btn">Done</button>
 </div>

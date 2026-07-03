@@ -1,3 +1,13 @@
+
+// Global handler for onclick attribute (works even if setupEventListeners fails)
+function handleViewTutorial() {
+    try {
+        document.getElementById('settingsModal').classList.add('hidden');
+        if (typeof startTutorial === 'function') startTutorial();
+        else alert('Tutorial not loaded. Please refresh the page.');
+    } catch(e) { console.error('Tutorial error:', e); alert('Could not start tutorial: ' + e.message); }
+}
+
 // === BookSpritz: Interactive Tutorial (22 steps with live demos) ===
 
 // ╔══════════════════════════════════════════════════════════════════╗
