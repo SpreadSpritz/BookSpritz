@@ -53,7 +53,7 @@ const TUTORIAL_STEPS = [
 
     // --- Editor ---
     { title: 'The Editor', body: 'This is where you write! Content flows across book-like pages automatically. When a page fills up, a new one is created. Press Backspace on an empty page to delete it and merge back.', selector: '#pagesWrapper', position: 'left', onEnter: () => { switchToTab('chapters'); ensureSidebarOpen(); } },
-    { title: 'Formatting Toolbar', body: 'Format your text with bold, italic, font size, and text colors. The color palette has 10 customizable preset slots — Alt-click a preset to reassign it. All formatting is preserved when you export.', selector: '#editorToolbar', position: 'bottom' },
+    { title: 'Formatting Toolbar', body: 'Format your text with bold, italic, font size, and text colors. The color palette has 10 customizable preset slots — Alt-click a preset to reassign it. All formatting is preserved when you export.', selector: '#editorToolbar', position: 'bottom-screen', onEnter: () => { const t = document.querySelector('#editorToolbar'); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
     { title: 'Live Demo: Find in Page', body: 'Let me show you the Find feature. I\'ve opened the search panel and searched for "' + TUTORIAL_DEMO.findWord + '". See the matches highlighted in the text? Use the arrow buttons to jump between matches, or press Ctrl+F anytime to open Find.', selector: '#findPanel', position: 'bottom-screen', onEnter: setupFindDemo, onExit: cleanupFindDemo },
 
     // --- More features ---
@@ -187,6 +187,14 @@ function positionTutorialBox(targetEl, position) {
             left = rect.left - boxW - margin;
             top = Math.max(margin, Math.min(rect.top, window.innerHeight - boxH - margin));
             if (left < margin) left = rect.right + margin;
+        } else if (position === 'top') {
+            // Place above the target element, centered horizontally
+            left = rect.left + (rect.width / 2) - (boxW / 2);
+            top = rect.top - boxH - margin;
+            // If not enough space above, flip to bottom
+            if (top < margin) top = rect.bottom + margin;
+            // Clamp horizontally
+            left = Math.max(margin, Math.min(left, window.innerWidth - boxW - margin));
         } else if (position === 'bottom') {
             left = (window.innerWidth - boxW) / 2;
             top = rect.bottom + margin;
